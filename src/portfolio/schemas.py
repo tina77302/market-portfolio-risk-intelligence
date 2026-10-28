@@ -86,10 +86,22 @@ class RiskContribution(BaseModel):
     share: float = Field(description="포트폴리오 변동성 중 이 자산 몫(%), 합계 100")
 
 
-class FactorExposure(BaseModel):
-    market: float = Field(description="SPY 수익률 1당 포트폴리오 수익률")
-    rate: float = Field(description="10년 금리 1bp당 포트폴리오 수익률")
-    volatility: float = Field(description="VIX 1pt당 포트폴리오 수익률")
+class FactorBeta(BaseModel):
+    market: float = Field(description="SPY 수익률 1당 수익률(소수)")
+    rate: float = Field(description="10년 금리 1bp당 수익률(소수)")
+    volatility: float = Field(description="VIX 1pt당 수익률(소수)")
+
+
+class AssetFactorExposure(FactorBeta):
+    ticker: str
+
+
+class FactorExposure(FactorBeta):
+    by_asset: list[AssetFactorExposure] = Field(
+        min_length=1,
+        max_length=MAX_HOLDINGS,
+        description="보유 자산별 베타. allocation과 같은 순서로 티커마다 한 번씩 반환",
+    )
 
 
 class AssetLoss(BaseModel):

@@ -2,6 +2,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from src.portfolio import api as portfolio_api
 from src.portfolio.api import router
 from src.portfolio.universe import load_universe
 
@@ -39,6 +40,47 @@ def test_spy_only_portfolio_is_fully_concentrated():
 
     assert body["sector"] == [{"sector": "Broad Equity", "weight": 100.0}]
     assert body["risk_contribution"] == [{"ticker": "SPY", "share": 100.0}]
+
+
+def test_analyze_preserves_asset_factor_exposure(monkeypatch):
+    # Synthetic coefficients test the response contract, not estimated betas.
+    exposure = {
+        "market": 0.62,
+        "rate": -0.00068,
+        "volatility": -0.00052,
+        "by_asset": [
+            {"ticker": "AAPL", "market": 1.1, "rate": -0.0002, "volatility": -0.001},
+            {"ticker": "TLT", "market": -0.1, "rate": -0.0014, "volatility": 0.0002},
+        ],
+    }
+    original_analyze = portfolio_api.analyze_portfolio
+
+    def analyze_with_factors(weights, returns, universe):
+        result = original_analyze(weights, returns, universe)
+        result["factor_exposure"] = exposure
+        return result
+
+    monkeypatch.setattr(portfolio_api, "analyze_portfolio", analyze_with_factors)
+
+    response = _analyze([
+        {"ticker": "AAPL", "weight": 60},
+        {"ticker": "TLT", "weight": 40},
+    ])
+
+    assert response.status_code == 200
+    assert response.json()["factor_exposure"] == exposure
+
+
+def test_openapi_documents_asset_factor_exposure():
+    schemas = client.get("/openapi.json").json()["components"]["schemas"]
+    exposure = schemas["FactorExposure"]
+    asset = schemas["AssetFactorExposure"]
+
+    assert "by_asset" in exposure["required"]
+    assert exposure["properties"]["by_asset"]["items"]["$ref"] == (
+        "#/components/schemas/AssetFactorExposure"
+    )
+    assert set(asset["required"]) == {"ticker", "market", "rate", "volatility"}
 
 
 ELEVEN = [{"ticker": t, "weight": 100 / 11} for t in load_universe().index[:11]]
