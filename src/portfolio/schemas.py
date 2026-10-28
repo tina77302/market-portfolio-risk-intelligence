@@ -23,7 +23,9 @@ class Holding(BaseModel):
 
 class AnalyzeRequest(BaseModel):
     holdings: list[Holding] = Field(min_length=1, max_length=MAX_HOLDINGS)
-    value_usd: float = Field(gt=0, description="포트폴리오 평가금액(USD)")
+    value_usd: float = Field(
+        gt=0, allow_inf_nan=False, description="포트폴리오 평가금액(USD)"
+    )
 
     @model_validator(mode="after")
     def check_portfolio(self):

@@ -25,6 +25,7 @@ def test_analyze_returns_hidden_risk():
 
     assert response.status_code == 200
     body = response.json()
+    assert body["value_usd"] == 100_000
     assert body["window"]["days"] == 756
     assert body["concentration"]["max_asset"] == {"ticker": "AAPL", "weight": 60.0}
     assert body["correlation"]["tickers"] == ["AAPL", "TLT"]
@@ -61,6 +62,20 @@ def test_invalid_portfolio_is_rejected(holdings):
 
 def test_value_must_be_positive():
     assert _analyze([{"ticker": "SPY", "weight": 100}], value_usd=0).status_code == 422
+
+
+@pytest.mark.parametrize(
+    "value_usd",
+    ["Infinity", "+Infinity", "-Infinity", "NaN", "1e309", "-1e309"],
+)
+def test_non_finite_value_is_rejected(value_usd):
+    response = _analyze([{"ticker": "SPY", "weight": 100}], value_usd=value_usd)
+
+    assert response.status_code == 422
+    assert any(
+        error["loc"] == ["body", "value_usd"]
+        for error in response.json()["detail"]
+    )
 
 
 def test_universe_and_scenarios_endpoints():
