@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from src.portfolio.universe import load_universe
@@ -63,7 +65,14 @@ class AssetWeight(BaseModel):
 
 class SectorWeight(BaseModel):
     sector: str
-    weight: float = Field(description="섹터 비중(%)")
+    weight: float = Field(description="자산 분류 기준 비중(%). ETF 내부 보유종목 미반영")
+
+
+class SectorMethodology(BaseModel):
+    classification: Literal["asset_level"]
+    etf_lookthrough: Literal[False]
+    label: str = Field(description="비중·집중도 화면에 표시할 집계 기준")
+    limitations: list[str] = Field(min_length=1)
 
 
 class MaxAsset(BaseModel):
@@ -73,7 +82,7 @@ class MaxAsset(BaseModel):
 
 class Concentration(BaseModel):
     max_asset: MaxAsset
-    max_sector: SectorWeight
+    max_sector: SectorWeight = Field(description="자산 분류 기준 최대 비중. ETF 내부 보유종목 미반영")
 
 
 class Correlation(BaseModel):
@@ -87,6 +96,8 @@ class RiskContribution(BaseModel):
 
 
 class FactorBeta(BaseModel):
+    """각 팩터를 따로 회귀한 민감도. 다른 팩터의 영향을 통제하지 않습니다."""
+
     market: float = Field(description="SPY 수익률 1당 수익률(소수)")
     rate: float = Field(description="10년 금리 1bp당 수익률(소수)")
     volatility: float = Field(description="VIX 1pt당 수익률(소수)")
@@ -106,17 +117,38 @@ class FactorExposure(FactorBeta):
 
 class AssetLoss(BaseModel):
     ticker: str
-    loss_usd: float
+    loss_usd: float = Field(
+        description="비중을 반영한 자산별 손실 기여액(USD). 양수=손실, 음수=이익"
+    )
 
 
 class StressResult(BaseModel):
+    """팩터 하나에 대한 선형 근사. 시나리오 간 손실은 합산하지 않습니다."""
+
     scenario: str
     name: str
+    factor: Literal["market", "rate", "volatility"]
     shock: float
     unit: str
-    loss_pct: float
-    loss_usd: float
-    by_asset: list[AssetLoss]
+    loss_pct: float = Field(description="손실률(%). 양수=손실, 음수=이익")
+    loss_usd: float = Field(
+        description="자산별 손실 기여액의 합계(USD). 양수=손실, 음수=이익"
+    )
+    by_asset: list[AssetLoss] = Field(
+        description="이익이 난 자산도 포함하며 allocation과 같은 순서로 반환"
+    )
+
+
+class AnalysisMethodology(BaseModel):
+    regression: Literal["separate_univariate"]
+    beta_frequency: Literal["daily"]
+    shock_horizon_days: int = Field(gt=0, description="충격 산출 기간(거래일)")
+    approximation: Literal["linear_beta_times_shock"]
+    scenarios_additive: Literal[False] = Field(
+        description="팩터 간 영향이 중복될 수 있으므로 시나리오별 손실 합산 불가"
+    )
+    is_forecast: Literal[False] = Field(description="선형 민감도 근사이며 미래 손실 예측이 아님")
+    limitations: list[str] = Field(min_length=1, description="결과 해석 시 표시할 한계")
 
 
 class AnalyzeResponse(BaseModel):
@@ -125,10 +157,15 @@ class AnalyzeResponse(BaseModel):
     value_usd: float
     allocation: list[AssetWeight]
     sector: list[SectorWeight]
+    sector_methodology: SectorMethodology
     concentration: Concentration
     correlation: Correlation
     volatility: float = Field(description="연율 변동성(%)")
     risk_contribution: list[RiskContribution]
+    methodology: AnalysisMethodology
     # D6–D7에 채움. 형식만 먼저 고정
     factor_exposure: FactorExposure | None = None
-    stress: list[StressResult] | None = None
+    stress: list[StressResult] | None = Field(
+        default=None,
+        description="시나리오별 선형 근사. 개별 비교용이며 손실을 합산하지 않음",
+    )

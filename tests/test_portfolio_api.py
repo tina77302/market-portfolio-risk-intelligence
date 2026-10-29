@@ -1,9 +1,12 @@
+import json
+
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from src.portfolio import api as portfolio_api
 from src.portfolio.api import router
+from src.portfolio.demo import DEMO_DIR, EXPECTED_PATH
 from src.portfolio.universe import load_universe
 
 app = FastAPI()
@@ -42,6 +45,42 @@ def test_spy_only_portfolio_is_fully_concentrated():
     assert body["risk_contribution"] == [{"ticker": "SPY", "share": 100.0}]
 
 
+def test_etf_sector_weights_explain_that_holdings_are_not_expanded():
+    response = _analyze([
+        {"ticker": "AAPL", "weight": 50},
+        {"ticker": "QQQ", "weight": 50},
+    ])
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["sector"] == [
+        {"sector": "Broad Equity", "weight": 50.0},
+        {"sector": "Information Technology", "weight": 50.0},
+    ]
+    method = body["sector_methodology"]
+    assert method == client.get("/api/portfolio/universe").json()["sector_methodology"]
+    assert method["classification"] == "asset_level"
+    assert method["etf_lookthrough"] is False
+    assert "ETF 내부 보유종목 미반영" in method["label"]
+    assert method["limitations"]
+
+
+@pytest.mark.parametrize("name", ["before", "after"])
+def test_saved_demo_requests_work_through_http_api(name):
+    request = json.loads((DEMO_DIR / f"{name}.json").read_text())
+    expected = json.loads(EXPECTED_PATH.read_text())
+    response = client.post("/api/portfolio/analyze", json=request)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["as_of"] == expected["as_of"]
+    assert body["window"] == expected["window"]
+    assert body["volatility"] == expected[name]["volatility"]
+    assert next(a["share"] for a in body["risk_contribution"] if a["ticker"] == "NVDA") == (
+        expected[name]["nvda_risk_share"]
+    )
+
+
 def test_analyze_preserves_asset_factor_exposure(monkeypatch):
     # Synthetic coefficients test the response contract, not estimated betas.
     exposure = {
@@ -69,6 +108,40 @@ def test_analyze_preserves_asset_factor_exposure(monkeypatch):
 
     assert response.status_code == 200
     assert response.json()["factor_exposure"] == exposure
+    stress = {s["scenario"]: s for s in response.json()["stress"]}
+    assert stress["equity_selloff"]["loss_pct"] == 14.4398
+    assert stress["equity_selloff"]["loss_usd"] == 14_439.8
+    assert stress["equity_selloff"]["by_asset"] == [
+        {"ticker": "AAPL", "loss_usd": 15_371.4},
+        {"ticker": "TLT", "loss_usd": -931.6},
+    ]
+    assert stress["rate_shock"]["loss_usd"] == 4_692.0
+    assert stress["volatility_shock"]["by_asset"][1]["loss_usd"] == -394.16
+    assert {key: row["factor"] for key, row in stress.items()} == {
+        "equity_selloff": "market",
+        "rate_shock": "rate",
+        "volatility_shock": "volatility",
+    }
+
+
+def test_methodology_is_available_and_consistent_before_betas_are_ready():
+    analysis_response = _analyze([{"ticker": "SPY", "weight": 100}])
+    scenario_response = client.get("/api/portfolio/scenarios")
+
+    assert analysis_response.status_code == scenario_response.status_code == 200
+    analysis = analysis_response.json()
+    scenarios = scenario_response.json()
+    method = analysis["methodology"]
+    assert method == scenarios["methodology"]
+    assert method["regression"] == "separate_univariate"
+    assert method["beta_frequency"] == "daily"
+    assert method["shock_horizon_days"] == scenarios["horizon_days"] == 10
+    assert method["approximation"] == "linear_beta_times_shock"
+    assert method["scenarios_additive"] is False
+    assert method["is_forecast"] is False
+    assert len(method["limitations"]) == 3
+    assert analysis["factor_exposure"] is None
+    assert analysis["stress"] is None
 
 
 def test_openapi_documents_asset_factor_exposure():

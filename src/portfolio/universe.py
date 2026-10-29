@@ -12,6 +12,18 @@ VALID_TYPES = {"stock", "etf"}
 VALID_ASSET_CLASSES = {"equity", "bond", "commodity"}
 
 
+def describe_sector_methodology():
+    return {
+        "classification": "asset_level",
+        "etf_lookthrough": False,
+        "label": "자산 분류 기준 비중 (ETF 내부 보유종목 미반영)",
+        "limitations": [
+            "ETF는 하나의 자산으로 집계하며, 내부 보유종목과 직접 보유종목의 중복 노출은 계산하지 않습니다.",
+            "Broad Equity·Treasury·Credit·Commodity 등은 자산 분류이며 실제 업종별 익스포저와 다릅니다.",
+        ],
+    }
+
+
 def load_universe(path=UNIVERSE_PATH):
     """
     지원 자산 목록(티커·이름·유형·섹터·자산군)을 읽고 형식을 검증합니다.

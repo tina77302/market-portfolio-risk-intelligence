@@ -7,9 +7,10 @@ from src.portfolio.analytics import (
     load_snapshot_meta,
     load_window_returns,
 )
-from src.portfolio.scenarios import SCENARIOS_PATH
+from src.portfolio.scenarios import SCENARIOS_PATH, describe_methodology
 from src.portfolio.schemas import AnalyzeRequest, AnalyzeResponse
-from src.portfolio.universe import load_universe
+from src.portfolio.stress import compute_stress
+from src.portfolio.universe import describe_sector_methodology, load_universe
 
 # 메인 앱에서 app.include_router(router) 한 줄로 연결합니다.
 router = APIRouter(prefix="/api/portfolio", tags=["portfolio"])
@@ -19,7 +20,10 @@ router = APIRouter(prefix="/api/portfolio", tags=["portfolio"])
 def get_universe():
     """지원 자산 목록"""
     assets = load_universe().reset_index()
-    return {"assets": assets.to_dict(orient="records")}
+    return {
+        "assets": assets.to_dict(orient="records"),
+        "sector_methodology": describe_sector_methodology(),
+    }
 
 
 @router.get("/scenarios")
@@ -34,6 +38,13 @@ def analyze(request: AnalyzeRequest):
     weights = {h.ticker: h.weight / 100 for h in request.holdings}
     result = analyze_portfolio(weights, load_window_returns(), load_universe())
 
+    exposure = result.get("factor_exposure")
+    if exposure is not None:
+        result["stress"] = compute_stress(
+            weights, request.value_usd, exposure["by_asset"],
+            get_scenarios()["scenarios"],
+        )
+
     meta = load_snapshot_meta()
     return {
         "as_of": meta["as_of"],
@@ -44,4 +55,6 @@ def analyze(request: AnalyzeRequest):
         },
         "value_usd": request.value_usd,
         **result,
+        "methodology": describe_methodology(),
+        "sector_methodology": describe_sector_methodology(),
     }
