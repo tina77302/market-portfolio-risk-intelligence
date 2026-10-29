@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Use the compiler API: this environment returns empty captured CLI config output.
+  // Type checking remains enabled; standalone tsc is also part of validation.
+  experimental: { useTypeScriptCli: false },
   cacheComponents: true,
   partialPrefetching: true,
 };

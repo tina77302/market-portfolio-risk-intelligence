@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# M/PRI · Korea & US Market Stress Monitor
 
-## Getting Started
-
-First, run the development server:
+A Korean-first, bilingual research dashboard built with the existing Next.js
+16 / React 19 stack. This frontend does not run inference or collect live data.
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run build
+npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Routes
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Route | Content |
+| --- | --- |
+| `/` | Two-country overview, price/risk charts, Korea breadth/correlations, original US V1 performance, October timeline |
+| `/us` | Separate original-V1 US history, stored metrics and observed stress rows |
+| `/korea` | Frozen V1, official MSI, historical selector, exact exported monitoring state, breadth, confirmation, validation and holdout |
+| `/breadth` | Korea diagnostics, stored correlation-date selector and breadth trend; US explicitly unavailable |
+| `/validation` | Original US V1 classification metrics and separate experimental Korea episode validation |
+| `/cases` | October 2026 retrospective timeline and reported/stored evidence table |
+| `/sources` | Input periods, counts, paths, fingerprints and export downloads |
+| `/methodology` | Signal roles, frozen breadth rule, ordered state classification and limitations |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The sidebar persists between routes. KR/EN uses the shared root context; Korean
+is the initial language. The preference persists for the current browser tab, including page reloads.
+The document language changes with the toggle. `dashboard-copy.ts` extends the
+existing `monitor-copy.ts` dictionary. Source identifiers/diagnostics retain
+their original language. Pretendard is bundled locally under its OFL license.
 
-## Learn More
+## Data
 
-To learn more about Next.js, take a look at the following resources:
+The original `public/data/korea-monitor.json` is unchanged. The new presentation
+snapshot `public/data/global-markets.json` contains only explicitly read stored
+columns from this repository and the separate original V1 project. No API is
+required at runtime, and the original project's API is not connected here.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Manually prepare the optional presentation snapshot from the repository root:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+python3 frontend/scripts/prepare-dashboard-data.py
+# Optional: --original-v1-root /path/to/market-stress-early-warning
+```
 
-## Deploy on Vercel
+This writes only the new `global-markets.json`; it never writes research inputs,
+loads model artifacts, computes new performance metrics, or trains a model. It
+checks date uniqueness/order, numeric units, US OOS/feature agreement and stored
+validation counts/periods. Missing original-V1 sources produce an unavailable US
+snapshot. Rebuild/restart after refreshing either export.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Country overview metrics refer to the research snapshot date; historical V1/MSI
+values are never carried into that date. Individual source dates and last
+complete dates are shown separately. US and Korea observations are not combined
+into a current global risk estimate.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Chart ranges use UTC calendar dates. Risk uses a fixed 0–100% right axis; SPY USD
+or KOSPI200 points use the left axis. Nulls break paths; the region after the last
+available OOS score is shaded. Hover and the keyboard observation slider expose
+exact stored values. Correlation heatmaps use stored pairwise observations from
+the Korea confirmation research, not a newly estimated three-month matrix or a
+US detector. Diagonal cells are omitted.
+
+## Validation
+
+```bash
+npm run test:charts
+npx tsc --noEmit
+npm run lint
+npm run build
+# Repository root:
+.venv/bin/python -m unittest discover -s tests -v
+```
+
+See [implementation, data coverage and verification](docs/REDESIGN.md) and
+[asset provenance, license and generation prompt](docs/ASSETS.md).
+
+## 최신 데이터 N/A 진단
+
+현재 원천별 종료일, 과거 정상 표시 예시, OOS와 운영 추론의 구분 및 갱신 작업의
+우선순위는 [한국어 데이터 가용성 보고서](docs/DATA_AVAILABILITY_KO.md)를 참조하세요.
+보고서 작성 과정에서 수집·추론·재학습이나 데이터 덮어쓰기는 수행하지 않았습니다.
