@@ -1,0 +1,9 @@
+{
+  "holdings": [
+    {"ticker": "AAPL", "weight": 30},
+    {"ticker": "MSFT", "weight": 30},
+    {"ticker": "NVDA", "weight": 20},
+    {"ticker": "AMZN", "weight": 20}
+  ],
+  "value_usd": 100000
+}
