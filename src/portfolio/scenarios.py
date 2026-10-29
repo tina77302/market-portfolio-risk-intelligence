@@ -24,6 +24,24 @@ SCENARIOS_PATH = (
 # 시장 조기경보 모델의 예측 구간(Target_10D)과 같은 10거래일
 HORIZON_DAYS = 10
 
+
+def describe_methodology(horizon_days=HORIZON_DAYS):
+    """팩터·스트레스 결과의 공통 해석 규칙을 반환합니다."""
+    return {
+        "regression": "separate_univariate",
+        "beta_frequency": "daily",
+        "shock_horizon_days": horizon_days,
+        "approximation": "linear_beta_times_shock",
+        "scenarios_additive": False,
+        "is_forecast": False,
+        "limitations": [
+            "각 베타는 팩터를 하나씩 따로 회귀한 민감도이며, 다른 팩터의 영향을 통제한 순수 효과가 아닙니다.",
+            "팩터 간 상관으로 같은 시장 움직임이 중복 반영될 수 있으므로 시나리오별 손실은 합산하지 않습니다.",
+            f"일별 베타에 {horizon_days}거래일 충격을 곱한 선형 근사이며, 미래 손실이나 발생 확률의 예측이 아닙니다.",
+        ],
+    }
+
+
 # shock 단위: return = 소수 수익률, bp = 금리 변화, pt = VIX 포인트 변화
 SCENARIOS = [
     {
@@ -35,7 +53,7 @@ SCENARIOS = [
         "unit": "return",
         "worst": "min",
         "rule": "스냅샷 기간 중 SPY 10거래일 수익률의 최저값",
-        "pnl_method": "손실률 = 포트폴리오 Market 베타 × 충격",
+        "pnl_method": "손실률(%) = -포트폴리오 Market 베타 × 충격 × 100 (양수=손실, 음수=이익)",
     },
     {
         "id": "rate_shock",
@@ -46,7 +64,7 @@ SCENARIOS = [
         "unit": "bp",
         "worst": "max",
         "rule": "스냅샷 기간 중 DGS10 10거래일 변화(bp)의 최고값",
-        "pnl_method": "손실률 = 포트폴리오 Rate 베타(bp당) × 충격",
+        "pnl_method": "손실률(%) = -포트폴리오 Rate 베타(bp당) × 충격 × 100 (양수=손실, 음수=이익)",
     },
     {
         "id": "volatility_shock",
@@ -57,7 +75,7 @@ SCENARIOS = [
         "unit": "pt",
         "worst": "max",
         "rule": "스냅샷 기간 중 VIX 10거래일 변화(pt)의 최고값",
-        "pnl_method": "손실률 = 포트폴리오 Volatility 베타(pt당) × 충격",
+        "pnl_method": "손실률(%) = -포트폴리오 Volatility 베타(pt당) × 충격 × 100 (양수=손실, 음수=이익)",
     },
 ]
 
@@ -111,6 +129,7 @@ def main():
         "lookback_start": meta["start"],
         "horizon_days": HORIZON_DAYS,
         "note": "사전에 정한 충격 가정에 따른 추정치이며 미래 손실 예측이 아닙니다.",
+        "methodology": describe_methodology(),
         "scenarios": compute_scenarios(prices, factors),
     }
     SCENARIOS_PATH.write_text(
