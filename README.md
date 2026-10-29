@@ -43,8 +43,9 @@ Technology 50% and Broad Equity 50%. This does not measure the actual underlying
 technology exposure or account for overlapping holdings. Treasury, Credit, and
 Commodity are asset categories rather than equity sectors.
 
-`factor_exposure` is `null` until the D6–D7 factor calculations are connected.
-Once available, it contains the portfolio betas and a required `by_asset` list:
+`factor_exposure` is estimated from the snapshot over the same `window` as
+volatility and correlation (756 trading days). It contains the portfolio betas
+and a required `by_asset` list:
 
 | Response field | Meaning |
 | --- | --- |
@@ -60,7 +61,7 @@ Beta return units are decimal, not percentages. The asset betas describe each
 asset before portfolio weighting; portfolio betas are their weight-adjusted sums.
 Missing estimates must not be represented as zero betas.
 
-`stress` is `null` until factor betas are available. Each scenario uses the same
+`stress` is computed from those betas. Each scenario uses the same
 loss convention: **positive = loss, negative = gain, zero = no change**.
 An asset's estimated return is its factor beta multiplied by that scenario's
 shock, using the beta and shock units above.
@@ -86,8 +87,7 @@ Both `/api/portfolio/analyze` and `/api/portfolio/scenarios` return `methodology
 with `regression: "separate_univariate"`, `beta_frequency: "daily"`,
 `shock_horizon_days: 10`, `approximation: "linear_beta_times_shock"`,
 `scenarios_additive: false`, `is_forecast: false`, and explanatory `limitations`.
-These fields define the D6 calculation contract even while betas and stress
-results are `null`.
+These fields describe how `factor_exposure` and `stress` are calculated.
 
 Fit each beta separately using daily asset returns and one daily factor
 (SPY return, DGS10 change in bp, or VIX change in points). These are marginal

@@ -1,7 +1,10 @@
+from functools import lru_cache
+
 import numpy as np
 import pandas as pd
 
 from src.portfolio.data import WINDOW_DAYS
+from src.portfolio.snapshot import SNAPSHOT_FACTORS_PATH, SNAPSHOT_PRICES_PATH
 
 # 팩터별 일간 변화의 단위: market = SPY 수익률(소수), rate = DGS10 변화(bp),
 # volatility = VIX 변화(pt). 베타는 그 단위 1당 자산 수익률(소수)입니다.
@@ -53,6 +56,14 @@ def estimate_betas(asset_returns, factor_moves):
         rows.append(row)
 
     return pd.DataFrame(rows).set_index("ticker")
+
+
+@lru_cache(maxsize=1)
+def load_asset_betas(window_days=WINDOW_DAYS):
+    """스냅샷으로 지원 자산 전체의 베타를 한 번 추정해 재사용합니다."""
+    prices = pd.read_csv(SNAPSHOT_PRICES_PATH, index_col="Date", parse_dates=True)
+    factors = pd.read_csv(SNAPSHOT_FACTORS_PATH, index_col="Date", parse_dates=True)
+    return estimate_betas(*build_factor_moves(prices, factors, window_days))
 
 
 def portfolio_exposure(weights, betas):

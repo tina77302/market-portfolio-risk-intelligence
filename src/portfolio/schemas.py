@@ -163,7 +163,7 @@ class AnalyzeResponse(BaseModel):
     volatility: float = Field(description="연율 변동성(%)")
     risk_contribution: list[RiskContribution]
     methodology: AnalysisMethodology
-    # D6–D7에 채움. 형식만 먼저 고정
+    # 스냅샷 추정 기간(window)의 베타로 계산
     factor_exposure: FactorExposure | None = None
     stress: list[StressResult] | None = Field(
         default=None,

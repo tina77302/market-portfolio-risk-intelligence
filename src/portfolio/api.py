@@ -7,6 +7,7 @@ from src.portfolio.analytics import (
     load_snapshot_meta,
     load_window_returns,
 )
+from src.portfolio.factors import load_asset_betas, portfolio_exposure
 from src.portfolio.scenarios import SCENARIOS_PATH, describe_methodology
 from src.portfolio.schemas import AnalyzeRequest, AnalyzeResponse
 from src.portfolio.stress import compute_stress
@@ -38,12 +39,12 @@ def analyze(request: AnalyzeRequest):
     weights = {h.ticker: h.weight / 100 for h in request.holdings}
     result = analyze_portfolio(weights, load_window_returns(), load_universe())
 
-    exposure = result.get("factor_exposure")
-    if exposure is not None:
-        result["stress"] = compute_stress(
-            weights, request.value_usd, exposure["by_asset"],
-            get_scenarios()["scenarios"],
-        )
+    exposure = portfolio_exposure(weights, load_asset_betas())
+    result["factor_exposure"] = exposure
+    result["stress"] = compute_stress(
+        weights, request.value_usd, exposure["by_asset"],
+        get_scenarios()["scenarios"],
+    )
 
     meta = load_snapshot_meta()
     return {

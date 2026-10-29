@@ -34,8 +34,10 @@ def test_analyze_returns_hidden_risk():
     assert body["concentration"]["max_asset"] == {"ticker": "AAPL", "weight": 60.0}
     assert body["correlation"]["tickers"] == ["AAPL", "TLT"]
     assert body["volatility"] > 0
-    assert body["factor_exposure"] is None
-    assert body["stress"] is None
+    assert [a["ticker"] for a in body["factor_exposure"]["by_asset"]] == ["AAPL", "TLT"]
+    assert [s["scenario"] for s in body["stress"]] == [
+        "equity_selloff", "rate_shock", "volatility_shock"
+    ]
 
 
 def test_spy_only_portfolio_is_fully_concentrated():
@@ -92,14 +94,9 @@ def test_analyze_preserves_asset_factor_exposure(monkeypatch):
             {"ticker": "TLT", "market": -0.1, "rate": -0.0014, "volatility": 0.0002},
         ],
     }
-    original_analyze = portfolio_api.analyze_portfolio
-
-    def analyze_with_factors(weights, returns, universe):
-        result = original_analyze(weights, returns, universe)
-        result["factor_exposure"] = exposure
-        return result
-
-    monkeypatch.setattr(portfolio_api, "analyze_portfolio", analyze_with_factors)
+    monkeypatch.setattr(
+        portfolio_api, "portfolio_exposure", lambda weights, betas: exposure
+    )
 
     response = _analyze([
         {"ticker": "AAPL", "weight": 60},
@@ -124,7 +121,25 @@ def test_analyze_preserves_asset_factor_exposure(monkeypatch):
     }
 
 
-def test_methodology_is_available_and_consistent_before_betas_are_ready():
+def test_spy_only_stress_equals_the_market_shock():
+    body = _analyze([{"ticker": "SPY", "weight": 100}]).json()
+    shock = client.get("/api/portfolio/scenarios").json()["scenarios"][0]["shock"]
+    equity = next(s for s in body["stress"] if s["scenario"] == "equity_selloff")
+
+    assert body["factor_exposure"]["market"] == pytest.approx(1.0)
+    assert equity["loss_pct"] == pytest.approx(-shock * 100, abs=1e-4)
+    assert equity["loss_usd"] == pytest.approx(-shock * 100_000, abs=0.01)
+
+
+def test_tlt_only_portfolio_loses_when_rates_rise():
+    body = _analyze([{"ticker": "TLT", "weight": 100}]).json()
+    rate = next(s for s in body["stress"] if s["scenario"] == "rate_shock")
+
+    assert body["factor_exposure"]["rate"] < 0
+    assert rate["loss_pct"] > 0
+
+
+def test_methodology_is_consistent_across_endpoints():
     analysis_response = _analyze([{"ticker": "SPY", "weight": 100}])
     scenario_response = client.get("/api/portfolio/scenarios")
 
@@ -140,8 +155,6 @@ def test_methodology_is_available_and_consistent_before_betas_are_ready():
     assert method["scenarios_additive"] is False
     assert method["is_forecast"] is False
     assert len(method["limitations"]) == 3
-    assert analysis["factor_exposure"] is None
-    assert analysis["stress"] is None
 
 
 def test_openapi_documents_asset_factor_exposure():
