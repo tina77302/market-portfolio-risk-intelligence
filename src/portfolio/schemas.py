@@ -48,6 +48,19 @@ class AnalyzeRequest(BaseModel):
         return self
 
 
+class CompareRequest(BaseModel):
+    """What-if 요청. 비중만 바꾸고 같은 평가금액으로 비교합니다."""
+
+    current: AnalyzeRequest
+    proposed: AnalyzeRequest
+
+    @model_validator(mode="after")
+    def check_same_value(self):
+        if self.current.value_usd != self.proposed.value_usd:
+            raise ValueError("변경 전후 평가금액(value_usd)이 같아야 합니다.")
+        return self
+
+
 # ---------- 응답 ----------
 
 class Window(BaseModel):
@@ -169,3 +182,20 @@ class AnalyzeResponse(BaseModel):
         default=None,
         description="시나리오별 선형 근사. 개별 비교용이며 손실을 합산하지 않음",
     )
+
+
+class ComparisonRow(BaseModel):
+    metric: str
+    label: str
+    unit: Literal["%", "usd", "beta"]
+    current: float
+    proposed: float
+    change: float = Field(description="proposed - current. 손실 지표에서 양수 = 손실 증가")
+    current_detail: str | None = Field(default=None, description="해당 값의 자산·섹터 이름")
+    proposed_detail: str | None = None
+
+
+class CompareResponse(BaseModel):
+    current: AnalyzeResponse
+    proposed: AnalyzeResponse
+    comparison: list[ComparisonRow]

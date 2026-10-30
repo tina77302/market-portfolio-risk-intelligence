@@ -24,13 +24,28 @@ python -m src.portfolio.scenarios   # size stress shocks into data/portfolio/sce
 python -m pytest tests
 ```
 
-API router (`src/portfolio/api.py`), mounted with `app.include_router(router)`:
+Run the portfolio API on its own (CORS allows `http://localhost:3000` by default;
+override with comma-separated `PORTFOLIO_API_CORS_ORIGINS`):
+
+```bash
+uvicorn src.portfolio.server:app --port 8000   # GET /health returns the snapshot date
+```
+
+A main app can instead mount the router (`src/portfolio/api.py`) with `app.include_router(router)`:
 
 | Endpoint | Description |
 | --- | --- |
 | `GET /api/portfolio/universe` | Supported assets with sector and asset class |
 | `GET /api/portfolio/scenarios` | Scenario definitions, shock sizes, historical reference windows |
 | `POST /api/portfolio/analyze` | `{"holdings": [{"ticker", "weight"}], "value_usd"}` → hidden risk analysis (weights in %) |
+| `POST /api/portfolio/compare` | `{"current": <analyze request>, "proposed": <analyze request>}` → both analyses plus a before/after `comparison` table |
+
+`/compare` is the What-if endpoint. Both portfolios must use the same `value_usd`,
+and each is validated like an `/analyze` request. `comparison` rows cover the
+maximum asset and sector weights (with the asset or sector name in
+`current_detail` / `proposed_detail`), volatility, market beta, and each
+scenario's `loss_pct` and `loss_usd`. `change` is `proposed - current`, so a
+positive change in a loss row means a larger loss.
 
 `/universe` and `/analyze` include `sector_methodology` with
 `classification: "asset_level"`, `etf_lookthrough: false`, a display `label`, and

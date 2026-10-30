@@ -9,9 +9,15 @@ from src.portfolio.analytics import (
 )
 from src.portfolio.factors import load_asset_betas, portfolio_exposure
 from src.portfolio.scenarios import SCENARIOS_PATH, describe_methodology
-from src.portfolio.schemas import AnalyzeRequest, AnalyzeResponse
+from src.portfolio.schemas import (
+    AnalyzeRequest,
+    AnalyzeResponse,
+    CompareRequest,
+    CompareResponse,
+)
 from src.portfolio.stress import compute_stress
 from src.portfolio.universe import describe_sector_methodology, load_universe
+from src.portfolio.whatif import compare_analyses
 
 # 메인 앱에서 app.include_router(router) 한 줄로 연결합니다.
 router = APIRouter(prefix="/api/portfolio", tags=["portfolio"])
@@ -58,4 +64,16 @@ def analyze(request: AnalyzeRequest):
         **result,
         "methodology": describe_methodology(),
         "sector_methodology": describe_sector_methodology(),
+    }
+
+
+@router.post("/compare", response_model=CompareResponse)
+def compare(request: CompareRequest):
+    """What-if: 변경 전후를 같은 엔진으로 분석하고 주요 지표 차이를 돌려줍니다."""
+    current = analyze(request.current)
+    proposed = analyze(request.proposed)
+    return {
+        "current": current,
+        "proposed": proposed,
+        "comparison": compare_analyses(current, proposed),
     }
