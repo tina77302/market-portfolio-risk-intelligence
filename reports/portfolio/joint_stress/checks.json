@@ -1,0 +1,68 @@
+{
+  "status": "complete within experimental replay scope; no operational adoption",
+  "tests": {
+    "passed": 58,
+    "failed": 0,
+    "new_experiment_tests": 11,
+    "command": "python -m pytest tests/test_portfolio_joint_stress_experiment.py tests/test_portfolio_stress_validation.py tests/test_portfolio_factors.py tests/test_portfolio_stress.py tests/test_portfolio_analytics.py tests/test_portfolio_snapshot.py tests/test_portfolio_universe.py -q"
+  },
+  "independent_values": {
+    "method": "Unscaled centered normal equations, separately sliced source rows; independent of scaled least-squares implementation",
+    "case_rows": 720,
+    "rolling_rows": 34800,
+    "all_rows_checked": true,
+    "loss_tolerance_pp": 1e-07,
+    "legacy_stress_validation_rows_matched": 13050
+  },
+  "checks": [
+    "known joint coefficients recovered on synthetic correlated inputs",
+    "no start-date or future data in coefficients",
+    "rate gaps not forward-filled in training and matched control",
+    "joint contributions and portfolio weight sums reconcile",
+    "zero variance and rank deficiency fail explicitly",
+    "same 145 dates and realized outcomes for all models",
+    "gate and chart values agree with CSVs",
+    "source input hashes and original Stress 검증 artifact hashes match"
+  ],
+  "demo_expected_json_check": "passed",
+  "chart": {
+    "payload_validation": "passed using standard Data renderer 1.2.1",
+    "rendering": "not checked; browser capability unavailable",
+    "offline": false
+  },
+  "full_suite": "Not rerun: prior full-suite attempt had missing Korea research CSV and HTTP test wait; no frontend/API changes in this experiment",
+  "preserved": {
+    "six_source_inputs": true,
+    "original_stress_validation_outputs": true,
+    "production_estimators_scenarios_api_and_demo": true
+  },
+  "limitations": [
+    "all 145 evaluation intervals already viewed before experiment design",
+    "realized shocks supplied after outcomes; conditional replay only",
+    "2020 cases have shorter lookbacks and overlap",
+    "some crisis case absolute errors increased",
+    "no population-wide or statistical-significance claim"
+  ],
+  "output_sha256": {
+    "rolling.csv": "59bb32e459174f0e0e62e348533038c03503644a37962fc77b9ee2dd4d9171f1",
+    "comparison.json": "0bbe7a589de675ec8ce04bc60bb31e79131adb3041dbc5b336f99ca29c38956b",
+    "summary.csv": "59a51cf2d323adffa165dafa3d169547fb27bc2839a9ab614b73edd18154af08",
+    "experiment.md": "29ef6e447e5621714a154daccfe90482ba9da41df8d1e9698e1438a75474153e",
+    "cases.csv": "f572aad540b8a7b210b8a10af6c315aeccd548131b83f56190fa2a6a39eff7f4",
+    "comparison.html": "a05518ed449b15fe00a6e9aefaf706faa751f0bfbf2b60cf1742b9ee7ef9da2e",
+    "manifest.json": "8cee2b3f0fcbda9decbfd8d213f9305dbd5d4131ffb700dc90b6921f37b7ab8f",
+    "gates.csv": "9c86ab793f0b8206fd633d7e6f029b25b5cd434aa5204836f78b6aba2531ebda"
+  },
+  "code_sha256": {
+    "analysis/portfolio_joint_stress_experiment.py": "a59596f51c23fea9db8b0a24b7e245c4ee34378329b2c8d039ee757bd5de3e98",
+    "tests/test_portfolio_joint_stress_experiment.py": "9b630bc9f767875f53386907943b5690a1fc60ac782cf39da650fd9cc7b09af2"
+  },
+  "naming_update": {
+    "display_names": [
+      "팩터 베타 분석",
+      "Stress 검증"
+    ],
+    "file_prefix": "stress_validation_",
+    "numeric_csv_bytes_preserved": true
+  }
+}

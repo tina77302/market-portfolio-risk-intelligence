@@ -1,0 +1,5 @@
+subject,model,mae_better_than_legacy_market,mae_better_than_spy,tail_positive_underestimate_no_worse_than_legacy,passes_all_descriptive_gates
+before,joint_market_rate,True,True,True,True
+before,joint_market_rate_vix,True,True,True,True
+after,joint_market_rate,True,True,True,True
+after,joint_market_rate_vix,True,True,True,True

@@ -1,0 +1,39 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>145개 구간: 동시 충격 모델의 평균 절대오차</title><style>html,body{margin:0}body{padding:20px;background:light-dark(#fff,#202020);color-scheme:light dark}</style></head><body><meta charset="utf-8"><style>/* Portable host defaults: scoped so charts also work without a Visualize host. */
+[data-data-chart] {
+  color-scheme: light dark;
+  font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--foreground, light-dark(#242424, #ececec));
+  --foreground: light-dark(#242424, #ececec);
+  --muted-foreground: light-dark(#6b6b6b, #aaa);
+  --card: light-dark(#fff, #202020);
+  --muted: light-dark(#f3f3f3, #303030);
+  --popover: light-dark(#fff, #292929);
+  --popover-foreground: var(--foreground);
+  --border: light-dark(#e7e7e7, #454545);
+  --ring: light-dark(#176bb8, #83c3ff);
+  --green: light-dark(#22794d, #74d58b);
+  --red: light-dark(#bc4760, #ed7891);
+  --viz-series-1: light-dark(#339cff, #83c3ff);
+  --viz-series-2: light-dark(#f3883b, #f59a56);
+  --viz-series-3: light-dark(#5dc977, #74d58b);
+  --viz-series-4: light-dark(#eb77b1, #f08fc0);
+  --viz-series-5: light-dark(#9b79ec, #aa91ef);
+  --viz-series-6: light-dark(#3ab9b1, #5acbc2);
+  min-width: 0;
+  width: 100%;
+}
+[data-data-chart][data-appearance="light"] { color-scheme: light; }
+[data-data-chart][data-appearance="dark"] { color-scheme: dark; }
+[data-data-chart] > [data-chart-error] { margin: 8px 0; color: var(--foreground); }
+@media print { [data-data-chart] { color-scheme: light; break-inside: avoid; } }
+</style>
+<section id="data-chart-3fcc321e-af47-45fe-a105-7ed48a914e61" data-data-chart data-viz-composition data-appearance="auto">
+<div data-viz-container style="min-width:0;min-height:480px"></div>
+</section>
+<script type="module">
+const {mountChart}=await import("https://persistent.oaistatic.com/plugins/visualize/charts/data-analytics-plugin/1.2.1/charts/element.js");
+const root=document.getElementById("data-chart-3fcc321e-af47-45fe-a105-7ed48a914e61");
+const target=root.querySelector("[data-viz-container]");
+const config={"id":"stress-validation-joint-comparison","title":"145개 구간: 동시 충격 모델의 평균 절대오차","height":380,"description":"낮을수록 실제 총손실에 가까움. 사후 관측 충격을 넣은 조건부 비교이며 새 홀드아웃 성능이 아님.","spec":{"type":"bar","x":"model","y":["변경 전","TLT 30%"],"yLabel":"MAE (%p)","showValues":true,"valueFormat":{"style":"decimal","maximumFractionDigits":2}},"rows":[{"model":"기존 시장 단일팩터","변경 전":2.1325440746668,"TLT 30%":1.6835786236890784},{"model":"주식+금리 OLS","변경 전":2.06046345543591,"TLT 30%":1.48658141830655},{"model":"주식+금리+VIX OLS","변경 전":2.087571179553832,"TLT 30%":1.4963462575301014},{"model":"단순 SPY","변경 전":2.3404804785745124,"TLT 30%":1.618695991975909}]};
+mountChart(target,config);
+</script></body></html>

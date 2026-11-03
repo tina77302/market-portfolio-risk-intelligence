@@ -1,0 +1,67 @@
+{
+  "snapshot_as_of": "2026-10-23",
+  "source_metadata": {
+    "as_of": "2026-10-23",
+    "start": "2018-01-02",
+    "window_start": "2023-10-19",
+    "window_end": "2026-10-23",
+    "window_days": 756,
+    "price_source": "Yahoo Finance adjusted close (auto_adjust)",
+    "rate_source": "FRED DGS10 (10-Year Treasury, %)",
+    "vol_source": "Yahoo Finance ^VIX close"
+  },
+  "runtime": {
+    "python": "3.14.4",
+    "pandas": "3.1.0",
+    "numpy": "2.5.4"
+  },
+  "inputs_sha256": {
+    "data/portfolio/prices.csv": "2f45982948c3b0675f7cf1de2a08afa1a98d082af28f02d4f32484b20603ce30",
+    "data/portfolio/factors.csv": "4d8fcb6a5d7dc721444ef4a687d6994ec653624c725280f67ed449163e73905d",
+    "data/portfolio/scenarios.json": "c1d072801f93f7691fb4bb6bedee1a7c97ed571ea3673aa84025997e81d2e75c",
+    "data/portfolio/snapshot_meta.json": "2c689e92496ab2ce9cf500b7fd2ff6207a419bacc38a140c2ad8a67109f7c1b4",
+    "examples/portfolio/before.json": "3d226e522716b06a7ce8412d20f868d6e4b37156314565d5905efef52b677b38",
+    "examples/portfolio/after.json": "4cbea1f56d18b0ec5edaffa832fa8fb747fae2f7e49b682e12394aaf85cb13db"
+  },
+  "method": {
+    "beta_cutoff": "strictly before interval start",
+    "lookback_returns": 756,
+    "minimum_paired_observations": 252,
+    "horizon_observations": 10,
+    "rolling_start_index": 757,
+    "rolling_stride": 10,
+    "actual_portfolio": "initial-weight buy-and-hold adjusted-close total return",
+    "shock": "realized, conditional, not forecast; no rounding",
+    "error": "actual loss minus estimated loss, percentage points",
+    "cases_partial_history": true,
+    "rolling_partial_history": false
+  },
+  "quality": {
+    "price_rows": 2215,
+    "assets": 28,
+    "first_date": "2018-01-02",
+    "last_date": "2026-10-23",
+    "missing_dgs10": 16,
+    "missing_prices": 0,
+    "duplicate_dates": 0,
+    "exact_date_alignment": true
+  },
+  "coverage": {
+    "case_rows": 90,
+    "rolling_rows": 13050,
+    "rolling_intervals_per_subject_factor": 145,
+    "assets": 28,
+    "portfolios": [
+      "before",
+      "after"
+    ]
+  },
+  "limitations": [
+    "ex-post extreme case selection",
+    "overlapping 2020 case windows",
+    "2020 history shorter than 756 returns",
+    "current-universe survivorship",
+    "revised adjusted-close snapshot, not historical release vintages",
+    "single-factor conditional replay is not a total-loss forecast"
+  ]
+}

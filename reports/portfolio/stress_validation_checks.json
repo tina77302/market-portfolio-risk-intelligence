@@ -1,0 +1,55 @@
+{
+  "scope": "Stress 검증 conditional stress replay against the frozen 2026-10-23 portfolio snapshot",
+  "related_tests": {
+    "passed": 47,
+    "failed": 0,
+    "command": "python -m pytest tests/test_portfolio_stress_validation.py tests/test_portfolio_factors.py tests/test_portfolio_stress.py tests/test_portfolio_analytics.py tests/test_portfolio_snapshot.py tests/test_portfolio_universe.py -q"
+  },
+  "independent_recalculation": {
+    "method": "numpy.linalg.lstsq using directly sliced pre-start prices and factor differences; separate from production covariance/variance helpers",
+    "event_rows": 90,
+    "rolling_rows": 13050,
+    "all_saved_rows_checked": true,
+    "loss_tolerance_percentage_points": 1e-07,
+    "summary_groups": 90
+  },
+  "demo_check": {
+    "command": "python -m src.portfolio.demo --check",
+    "passed": true
+  },
+  "source_inputs": {
+    "all_six_sha256_match": true,
+    "source_data_or_model_changes": false
+  },
+  "chart": {
+    "renderer": "Data standard bar chart 1.2.1",
+    "payload_validation": "passed",
+    "six_pairs_match_case_csv": true,
+    "pixel_and_interaction_verification": "unavailable: no browser capability in this executor",
+    "checker": "full fragment checker did not complete; stopped; payload validation only",
+    "network_requirement": "CDN; not offline"
+  },
+  "full_suite": {
+    "status": "not passed",
+    "existing_failure": "tests/test_dashboard_snapshot.py::DashboardSnapshotTests::test_optional_original_project_fails_closed",
+    "cause": "Missing data/processed/early_warning_v2/korea_feature_matrix_v1_reproduction.csv in checkout",
+    "additional_limit": "Full suite stopped while waiting in existing HTTP API tests; no claim of HTTP test completion"
+  },
+  "artifact_sha256": {
+    "stress_validation_event_replay.csv": "79350131313c2f351b52e640c0982945cbfcc9b13daabd76b61fd38dbdd2195f",
+    "stress_validation_rolling_replay.csv": "26d34013554ed1236c5e344cbd220892e0645a62b7764635377ce7d79c0c1ec9",
+    "stress_validation_rolling_summary.csv": "660586965d700c163cd50bc628ad190a40b9455363614d8d45597c8d1784f8fa",
+    "stress_validation_comparison.html": "719ab6e48cb07365d865f512d193835efdea71c374d71ea0917b7f647d772e91",
+    "stress_validation_comparison.json": "54721ebc096ffb9dd9bdb785079f2af16e3870039209482d0a6851d032e7751b",
+    "stress_validation_report.md": "a63bbfe658e8de59151b4f0a6a68f183ce588d412e37a8d46e74c3cb31935315",
+    "stress_validation_manifest.json": "546bb0539797d326e56fc2f86c307a67f891f61321b4f1ab14372ef1307be295"
+  },
+  "naming_update": {
+    "display_names": [
+      "팩터 베타 분석",
+      "Stress 검증"
+    ],
+    "file_prefix": "stress_validation_",
+    "numeric_csv_bytes_preserved": true
+  }
+}

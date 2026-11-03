@@ -1,0 +1,65 @@
+{
+  "inputs_sha256": {
+    "data/portfolio/prices.csv": "2f45982948c3b0675f7cf1de2a08afa1a98d082af28f02d4f32484b20603ce30",
+    "data/portfolio/factors.csv": "4d8fcb6a5d7dc721444ef4a687d6994ec653624c725280f67ed449163e73905d",
+    "data/portfolio/scenarios.json": "c1d072801f93f7691fb4bb6bedee1a7c97ed571ea3673aa84025997e81d2e75c",
+    "data/portfolio/snapshot_meta.json": "2c689e92496ab2ce9cf500b7fd2ff6207a419bacc38a140c2ad8a67109f7c1b4",
+    "examples/portfolio/before.json": "3d226e522716b06a7ce8412d20f868d6e4b37156314565d5905efef52b677b38",
+    "examples/portfolio/after.json": "4cbea1f56d18b0ec5edaffa832fa8fb747fae2f7e49b682e12394aaf85cb13db"
+  },
+  "runtime": {
+    "python": "3.14.4",
+    "numpy": "2.5.4",
+    "pandas": "3.1.0"
+  },
+  "models": {
+    "legacy_market": [
+      "market"
+    ],
+    "legacy_rate": [
+      "rate"
+    ],
+    "legacy_volatility": [
+      "volatility"
+    ],
+    "matched_market": [
+      "market"
+    ],
+    "joint_market_rate": [
+      "market",
+      "rate"
+    ],
+    "joint_market_rate_vix": [
+      "market",
+      "rate",
+      "volatility"
+    ]
+  },
+  "method": {
+    "window_daily_returns": 756,
+    "minimum_complete_returns": 252,
+    "train_cutoff": "strictly before start",
+    "horizon": 10,
+    "stride": 10,
+    "shock_input": "joint realized interval changes; conditional replay, not forecast",
+    "intercept": "fitted, excluded from stress return",
+    "parameter_tuning": false,
+    "new_holdout": false,
+    "production_adoption": false
+  },
+  "coverage": {
+    "case_rows": 720,
+    "rolling_rows": 34800,
+    "summary_rows": 240,
+    "intervals": 145,
+    "assets": 28,
+    "portfolios": 2
+  },
+  "descriptive_gates": [
+    "MAE < legacy_market",
+    "MAE < spy_proxy",
+    "worst-decile mean positive underestimate <= legacy_market",
+    "both demo portfolios must pass"
+  ],
+  "source_preserved": true
+}

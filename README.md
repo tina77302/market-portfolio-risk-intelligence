@@ -178,6 +178,42 @@ Using the frozen 2026-10-23 snapshot and 756 daily returns (2023-10-19 through
 The shift lowers the equity and volatility shock losses and adds a rate-shock
 loss that was not distinguishable from zero before.
 
+### Stress 검증: historical loss replay
+
+The [Stress 검증](reports/portfolio/stress_validation_report.md) compares estimates with
+realized buy-and-hold losses for all 28 supported assets and the two demo
+portfolios. Betas use only observations strictly before each interval starts.
+Three frozen stress cases are complemented by 145 non-overlapping 10-day
+intervals with full 756-return training windows. The 2020 cases have shorter
+available histories and are flagged separately.
+
+```bash
+python -m analysis.portfolio_stress_validation
+python -m pytest tests/test_portfolio_stress_validation.py
+```
+
+These are conditional replays using realized factor shocks, not forecasts of
+shocks or total losses. Single-factor estimates can materially overstate or
+understate realized losses; see the report for baselines, errors and limitations.
+
+### Stress 검증: joint-factor replay experiment
+
+The [joint-factor experiment](reports/portfolio/joint_stress/experiment.md)
+fits equity/rate and equity/rate/VIX coefficients together, then applies each
+interval's jointly observed shocks. It keeps the same pre-start training cutoff,
+daily beta approximation and 145 evaluation intervals, and includes a matched
+training-sample control for missing rate observations.
+
+```bash
+python -m analysis.portfolio_joint_stress_experiment
+python -m pytest tests/test_portfolio_joint_stress_experiment.py
+```
+
+The joint models improve average errors in this retrospective comparison, but
+some fixed crisis cases deteriorate. Production single-factor scenarios and
+the original Stress 검증 artifacts remain separate; fresh holdout validation is required
+before operational adoption.
+
 Run the real analysis code against the fixed requests without downloading data:
 
 ```bash
