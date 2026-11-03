@@ -249,6 +249,25 @@ The primary equity-down and joint-shock buckets have only three and two
 intervals. Some bias directions change across periods or thresholds, so these
 diagnostics do not establish a stable correction or a prospective regime rule.
 
+### Stress 검증: historical-error bands and empirical coverage
+
+The [error-band validation](reports/portfolio/error_band_stress/stress_validation_report.md)
+adds bounds around the first revision's unchanged point estimates. Calibration
+uses up to 60 errors whose outcome end is strictly before each evaluation start,
+with a minimum of 30. The first 31 intervals remain unavailable; 114 are scored.
+Signed-error bounds and a symmetric absolute-error comparator use identical
+eligible dates. Coverage, width, upper-loss exceedances and interval scores are
+reported overall, by chronological half, and by realized market situation.
+
+```bash
+python -m analysis.portfolio_error_band_validation
+python -m pytest tests/test_portfolio_error_band_validation.py
+```
+
+The 90% target is a design setting, not a guaranteed future probability. Overall
+historical coverage exceeds 90%, while loss-only coverage is lower and the bands
+remain wide. No production forecast or loss limit is implied.
+
 Run the real analysis code against the fixed requests without downloading data:
 
 ```bash

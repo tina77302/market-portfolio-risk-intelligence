@@ -1,0 +1,60 @@
+{
+  "status": "error-band calculation and retrospective coverage validation complete; no future probability guarantee or production adoption",
+  "tests": {
+    "passed": 86,
+    "failed": 0,
+    "new_band_tests": 9,
+    "command": "python -m pytest tests/test_portfolio_error_band_validation.py tests/test_portfolio_regime_stress_diagnostics.py tests/test_portfolio_horizon_stress_experiment.py tests/test_portfolio_joint_stress_experiment.py tests/test_portfolio_stress_validation.py tests/test_portfolio_factors.py tests/test_portfolio_stress.py tests/test_portfolio_analytics.py tests/test_portfolio_snapshot.py tests/test_portfolio_universe.py -q"
+  },
+  "independent_values": {
+    "band_rows_checked": 8700,
+    "ready_rows": 6840,
+    "warmup_rows": 1860,
+    "point_estimates_unchanged": true,
+    "method": "Independently filter frozen per-subject outcome end dates, retain last 60, sort raw residuals, recompute order statistics, interval scores and subgroup denominators",
+    "loss_tolerance_pp": 1e-07
+  },
+  "checks": [
+    "known 30/60-sample order statistics and zero-error case",
+    "strict end-before-start eligibility including exclusion of immediately preceding unfinished window",
+    "current, future and not-yet-matured outcomes do not change current bounds",
+    "no residual pooling between subjects",
+    "31 warmup windows retain null bounds and null coverage",
+    "matched calibration samples for both methods",
+    "coverage and interval scores reconcile to saved rows",
+    "warmup gaps and point estimates agree with chart data",
+    "all prior model, direct-horizon and regime artifact hashes preserved"
+  ],
+  "demo_expected_json_check": "passed",
+  "chart": {
+    "payload_validation": "passed for two standard Data line charts 1.2.1",
+    "rendering": "not checked; no browser capability",
+    "offline": false
+  },
+  "full_suite": "Affected analytical tests only; prior unrelated missing Korea research CSV and HTTP-test wait remain outside this check",
+  "limitations": [
+    "rules designed after inspecting the same 145 historical intervals; not a new holdout",
+    "90% is a target, not future coverage guarantee",
+    "empirical loss-only coverage differs from overall coverage",
+    "calibration windows overlap across evaluation dates",
+    "current supported universe, revised snapshot and realized conditional shocks inherited",
+    "no maximum-loss bound or prospective crash forecast"
+  ],
+  "output_sha256": {
+    "stress_validation_period_summary.csv": "e552a4e3a0503d85f83ac4252a28e20f571de394ad5c35e32b01ca0c6f22ecb7",
+    "stress_validation_upper_breaches.csv": "e11b755cbdfc2a76639257dcd69f0663b653a0973fba3165a28aad49e06a7182",
+    "stress_validation_report.md": "0e7f0fba92d4366895490e664d39552dfca8673ccde573f1fe71fb485bf75820",
+    "stress_validation_before_comparison.html": "44fbacc6d4a3413fd6cc2d98d28e3735776aa8614f0286fd25f24dc0be53d56e",
+    "stress_validation_summary.csv": "9ff7ad242b9c8142ecf6179aa2f2ee8c42735aaf223552c1d38460a0fa245d95",
+    "stress_validation_before_comparison.json": "4f8cdd5198e4091b6ed2b1b6ee69bf3ca98b24564653604f3255912ce3d3de46",
+    "stress_validation_regime_summary.csv": "3339a7db23ba8b3bea27c88b793cdf1dbd1d7f6eea01211950e2107c7d05a3fd",
+    "stress_validation_rows.csv": "c444b7d99ea7ac3de1234e9458a6baf6ea8ee51c13d37dbb8f6e93b42bcdad63",
+    "stress_validation_after_comparison.html": "9270042932a45f5da95a3bb23d47f491da9401198e646a45ecb5828b404bda15",
+    "stress_validation_manifest.json": "3b5c8df33456d2c403ced19b041b377c56d3478e99ba9b5a91ecba76a68d0976",
+    "stress_validation_after_comparison.json": "30270898222cf03234fea7a4ef62eba459678c04368f871092fdc96fa933e5ea"
+  },
+  "code_sha256": {
+    "analysis/portfolio_error_band_validation.py": "27068f268d4f2201be36ff75c0f8dc602c095ebdb5897c4ec18525b25ae231fa",
+    "tests/test_portfolio_error_band_validation.py": "5c9930fa1858f65e00659d2c5641e3922c80df5fb2ec00d90f177c9424ea45bf"
+  }
+}
