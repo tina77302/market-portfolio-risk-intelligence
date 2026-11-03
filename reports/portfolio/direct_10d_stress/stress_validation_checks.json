@@ -1,0 +1,60 @@
+{
+  "status": "experiment complete; direct 10-day candidates not selected to replace first revision",
+  "tests": {
+    "passed": 68,
+    "failed": 0,
+    "new_horizon_tests": 10,
+    "command": "python -m pytest tests/test_portfolio_horizon_stress_experiment.py tests/test_portfolio_joint_stress_experiment.py tests/test_portfolio_stress_validation.py tests/test_portfolio_factors.py tests/test_portfolio_stress.py tests/test_portfolio_analytics.py tests/test_portfolio_snapshot.py tests/test_portfolio_universe.py -q"
+  },
+  "independent_calculation": {
+    "method": "Separate source slicing and unscaled centered normal equations for daily and 10-day models; independent of standardized least-squares implementation",
+    "case_rows": 540,
+    "rolling_rows": 26100,
+    "all_prediction_rows_checked": true,
+    "loss_tolerance_pp": 1e-07,
+    "first_revision_rolling_rows_matched": 4350,
+    "daily_intercept_control_rows_matched": 4350
+  },
+  "training_validation": [
+    "every block ends strictly before evaluation start",
+    "non-overlapping return increments within each fit",
+    "future/start-day changes leave training data and coefficients unchanged",
+    "known 10-day coefficients and intercept recovered on synthetic data",
+    "missing rate endpoints drop blocks without imputation",
+    "missing interior rates do not invalidate observed endpoint changes",
+    "insufficient usable blocks rejected",
+    "coefficients converted back to original units",
+    "intercept and factor contributions reconcile with portfolio totals"
+  ],
+  "source_and_prior_results_preserved": true,
+  "demo_expected_json_check": "passed",
+  "chart": {
+    "payload_validation": "passed using standard Data renderer 1.2.1",
+    "rendering": "not checked: no browser capability",
+    "offline": false
+  },
+  "full_suite": "Not rerun: prior unrelated Korea research fixture was missing and HTTP tests did not complete; affected analytical tests only",
+  "limitations": [
+    "same 145 already-seen evaluation intervals; not a new holdout",
+    "realized factors supplied after outcomes; conditional replay only",
+    "54-75 usable non-overlap training blocks",
+    "training horizon change also changes sample size and endpoint missingness",
+    "2020 cases overlap and have shorter lookbacks",
+    "current-universe revised snapshot; not point-in-time release data"
+  ],
+  "output_sha256": {
+    "stress_validation_comparison.html": "91bba6ecbe126fe8edde5f111a5b6b607bf51f6439776cc29ed40387a6f6aed4",
+    "stress_validation_report.md": "11696710aef4146b59d559a8d4e9cc48156ba695a913637f1354c0e80e7f4708",
+    "stress_validation_comparison.json": "9f858409373e032c10abce12a5408e8a445f922e411c0d09788094926cf98b01",
+    "stress_validation_rolling.csv": "e49e1aeb4bf9c947d6fcb1ca544cd34b8b01bb7593dac4e45855611ab182947b",
+    "stress_validation_summary.csv": "6db9b8f6c9b91227b366c2807f27961f5abb144541a6c8250039e09b89c05d59",
+    "stress_validation_training_blocks.csv": "ffc3a3f2e681fa27ce43ee2389f37a9bfc4eacb7ad1843da2a3f35e7e148470b",
+    "stress_validation_gates.csv": "408b542a01add0739f07adcb9a6f1b6468fb71b6bd248b6e07002aa1632dfd2a",
+    "stress_validation_manifest.json": "50a02e888666cb0bb7f10e2ca357d498f6fa60abaabe82ac0eea2e41ad53cba8",
+    "stress_validation_cases.csv": "633c213200d4c5dde8bddeaf04307e3b58b95ccca6c62b0ede2ea97a2eb04c2b"
+  },
+  "code_sha256": {
+    "analysis/portfolio_horizon_stress_experiment.py": "362412c55516641deca8003c7937269f29813cf958c7a6d958e067c359be5ea7",
+    "tests/test_portfolio_horizon_stress_experiment.py": "e88a18c57a02a9dbb9b2240330342ed16e02d55baa08ab9f700a78b968c6aa5b"
+  }
+}

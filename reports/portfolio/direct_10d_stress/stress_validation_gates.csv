@@ -1,0 +1,5 @@
+subject,model,mae_better_than_first_revision,mae_better_than_spy,tail_positive_underestimate_no_worse,passes_all_descriptive_gates
+before,direct_10d_joint,False,True,False,False
+before,direct_10d_sensitivity,False,True,False,False
+after,direct_10d_joint,False,True,False,False
+after,direct_10d_sensitivity,False,True,False,False

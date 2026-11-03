@@ -214,6 +214,24 @@ some fixed crisis cases deteriorate. Production single-factor scenarios and
 the original Stress 검증 artifacts remain separate; fresh holdout validation is required
 before operational adoption.
 
+### Second Stress 검증 revision: direct 10-day returns
+
+The [direct 10-day experiment](reports/portfolio/direct_10d_stress/stress_validation_report.md)
+fits equity/rate coefficients to non-overlapping 10-trading-day asset returns.
+Every training block ends strictly before its evaluation interval starts.
+It compares models with and without the fitted intercept and preserves the
+first revision as the daily-beta baseline on the same 145 evaluation intervals.
+
+```bash
+python -m analysis.portfolio_horizon_stress_experiment
+python -m pytest tests/test_portfolio_horizon_stress_experiment.py
+```
+
+The direct-return candidates improve the fixed crisis cases but worsen average
+and tail-underestimation errors relative to the first revision. They are not
+selected to replace that candidate. Training-block dates, counts and missing
+endpoint exclusions are retained for inspection.
+
 Run the real analysis code against the fixed requests without downloading data:
 
 ```bash
