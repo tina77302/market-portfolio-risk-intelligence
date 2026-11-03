@@ -1,0 +1,53 @@
+{
+  "sources_sha256": {
+    "reports/portfolio/joint_stress/rolling.csv": "59bb32e459174f0e0e62e348533038c03503644a37962fc77b9ee2dd4d9171f1",
+    "reports/portfolio/joint_stress/manifest.json": "8cee2b3f0fcbda9decbfd8d213f9305dbd5d4131ffb700dc90b6921f37b7ab8f"
+  },
+  "upstream_inputs_sha256": {
+    "data/portfolio/prices.csv": "2f45982948c3b0675f7cf1de2a08afa1a98d082af28f02d4f32484b20603ce30",
+    "data/portfolio/factors.csv": "4d8fcb6a5d7dc721444ef4a687d6994ec653624c725280f67ed449163e73905d",
+    "data/portfolio/scenarios.json": "c1d072801f93f7691fb4bb6bedee1a7c97ed571ea3673aa84025997e81d2e75c",
+    "data/portfolio/snapshot_meta.json": "2c689e92496ab2ce9cf500b7fd2ff6207a419bacc38a140c2ad8a67109f7c1b4",
+    "examples/portfolio/before.json": "3d226e522716b06a7ce8412d20f868d6e4b37156314565d5905efef52b677b38",
+    "examples/portfolio/after.json": "4cbea1f56d18b0ec5edaffa832fa8fb747fae2f7e49b682e12394aaf85cb13db"
+  },
+  "runtime": {
+    "python": "3.14.4",
+    "numpy": "2.5.4",
+    "pandas": "3.1.0"
+  },
+  "method": {
+    "focal_model": "joint_market_rate",
+    "comparators": [
+      "legacy_market",
+      "joint_market_rate_vix",
+      "spy_proxy"
+    ],
+    "equity_cutoff": -0.05,
+    "rate_cutoff_bp": 20.0,
+    "small_sample_threshold": 5,
+    "sensitivity_equity_cutoffs": [
+      -0.03,
+      -0.05,
+      -0.07
+    ],
+    "sensitivity_rate_cutoffs_bp": [
+      10,
+      20,
+      30
+    ],
+    "regimes_use_realized_outcomes": true,
+    "new_holdout": false,
+    "refitting": false,
+    "period_split": "chronological first 72 vs last 73 intervals",
+    "positive_error": "actual minus estimated loss"
+  },
+  "coverage": {
+    "intervals": 145,
+    "selected_rows": 17400,
+    "regime_summary_rows": 480,
+    "cross_summary_rows": 1800,
+    "period_summary_rows": 960,
+    "sensitivity_rows": 72
+  }
+}

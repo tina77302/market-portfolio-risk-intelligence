@@ -1,0 +1,39 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Stress 검증: 상황별 실제 손실−추정 손실</title><style>html,body{margin:0}body{padding:20px;background:light-dark(#fff,#202020);color-scheme:light dark}</style></head><body><meta charset="utf-8"><style>/* Portable host defaults: scoped so charts also work without a Visualize host. */
+[data-data-chart] {
+  color-scheme: light dark;
+  font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--foreground, light-dark(#242424, #ececec));
+  --foreground: light-dark(#242424, #ececec);
+  --muted-foreground: light-dark(#6b6b6b, #aaa);
+  --card: light-dark(#fff, #202020);
+  --muted: light-dark(#f3f3f3, #303030);
+  --popover: light-dark(#fff, #292929);
+  --popover-foreground: var(--foreground);
+  --border: light-dark(#e7e7e7, #454545);
+  --ring: light-dark(#176bb8, #83c3ff);
+  --green: light-dark(#22794d, #74d58b);
+  --red: light-dark(#bc4760, #ed7891);
+  --viz-series-1: light-dark(#339cff, #83c3ff);
+  --viz-series-2: light-dark(#f3883b, #f59a56);
+  --viz-series-3: light-dark(#5dc977, #74d58b);
+  --viz-series-4: light-dark(#eb77b1, #f08fc0);
+  --viz-series-5: light-dark(#9b79ec, #aa91ef);
+  --viz-series-6: light-dark(#3ab9b1, #5acbc2);
+  min-width: 0;
+  width: 100%;
+}
+[data-data-chart][data-appearance="light"] { color-scheme: light; }
+[data-data-chart][data-appearance="dark"] { color-scheme: dark; }
+[data-data-chart] > [data-chart-error] { margin: 8px 0; color: var(--foreground); }
+@media print { [data-data-chart] { color-scheme: light; break-inside: avoid; } }
+</style>
+<section id="data-chart-fd197df1-b101-453d-874f-1d952993a8b3" data-data-chart data-viz-composition data-appearance="auto">
+<div data-viz-container style="min-width:0;min-height:510px"></div>
+</section>
+<script type="module">
+const {mountChart}=await import("https://persistent.oaistatic.com/plugins/visualize/charts/data-analytics-plugin/1.2.1/charts/element.js");
+const root=document.getElementById("data-chart-fd197df1-b101-453d-874f-1d952993a8b3");
+const target=root.querySelector("[data-viz-container]");
+const config={"id":"stress-validation-regime-mean-signed-error-pp","title":"Stress 검증: 상황별 실제 손실−추정 손실","height":410,"description":"첫 수정 모델, 사후 관측 충격별 분류. n\u003c5는 작은 표본. N/A는 해당 구간 없음. 양의 편향=실제가 추정보다 손실 쪽.","spec":{"type":"bar","x":"regime","y":["변경 전","TLT 30%"],"yLabel":"%p","showValues":true,"valueFormat":{"style":"decimal","maximumFractionDigits":2}},"rows":[{"regime":"주식 급락·금리 급등 동반 (n=2)","변경 전":3.5693105841849992,"TLT 30%":2.4324864116700002},{"regime":"주식 급락(금리 기준 미충족) (n=3)","변경 전":1.1650900121233327,"TLT 30%":1.0389561281700004},{"regime":"금리 급등(주식 기준 미충족) (n=23)","변경 전":-0.5321774937810002,"TLT 30%":-0.580814360899739},{"regime":"두 기준 모두 미충족 (n=117)","변경 전":-0.3290727097421487,"TLT 30%":-0.2691190078866566}]};
+mountChart(target,config);
+</script></body></html>

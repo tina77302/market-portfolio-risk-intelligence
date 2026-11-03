@@ -1,0 +1,65 @@
+{
+  "status": "diagnostics complete; no refit, correction, model switch or new forecast rule",
+  "tests": {
+    "passed": 77,
+    "failed": 0,
+    "new_diagnostic_tests": 9,
+    "command": "python -m pytest tests/test_portfolio_regime_stress_diagnostics.py tests/test_portfolio_horizon_stress_experiment.py tests/test_portfolio_joint_stress_experiment.py tests/test_portfolio_stress_validation.py tests/test_portfolio_factors.py tests/test_portfolio_stress.py tests/test_portfolio_analytics.py tests/test_portfolio_snapshot.py tests/test_portfolio_universe.py -q"
+  },
+  "independent_values": {
+    "source_prediction_rows_reconciled": 17400,
+    "primary_regime_summary_rows": 480,
+    "cross_summary_rows": 1800,
+    "period_summary_rows": 960,
+    "sensitivity_summary_rows": 72,
+    "method": "independent conditional masks on frozen prediction CSVs; recompute counts, MAE, signed bias, loss-only bias and additive error totals within applicable tables",
+    "loss_tolerance_pp": 1e-07
+  },
+  "data_checks": [
+    "source inputs and prior result artifact hashes preserved",
+    "exact date and model joins without duplicate rows",
+    "all four models share the same 145 intervals and realized outcomes",
+    "realized SPY/rate changes matched to snapshot endpoints",
+    "four-way and 15-cell partitions reconcile to all 145 observations and total absolute error",
+    "empty buckets retained with null errors; n<5 tagged",
+    "loss-only and gain-only conditional biases distinguished",
+    "chronological halves contain 72 and 73 intervals",
+    "all nine threshold combinations retained",
+    "chart values and worst-window list match underlying rows"
+  ],
+  "demo_expected_json_check": "passed",
+  "chart": {
+    "payload_validation": "passed for both standard Data charts 1.2.1",
+    "rendering": "not checked; browser capability unavailable",
+    "offline": false
+  },
+  "full_suite": "Not rerun: previously missing Korea research fixture and incomplete HTTP test run; affected analytical tests passed",
+  "limitations": [
+    "posthoc regimes use realized market outcomes, not available regime forecasts",
+    "joint-shock n=2 and other equity-down n=3 at fixed thresholds",
+    "n>=5 is a display rule, not a confidence guarantee",
+    "threshold and temporal bias directions can change",
+    "outcome-sign groups are conditional diagnostics, not causal explanations",
+    "existing 145 already-seen intervals and overlapping model training windows",
+    "current supported asset universe and revised snapshot"
+  ],
+  "output_sha256": {
+    "stress_validation_bias_comparison.json": "c3e15f324baa0f565b3e774093070ee1cf2079f7b2c9ce81573009f41839bcbe",
+    "stress_validation_period_summary.csv": "cecba2cf100474a88cc17ab784c2c3beecd52d40263bb09c79524b80f738b8f2",
+    "stress_validation_report.md": "e6fc8c01db363112cc24cc2f73116105c3f05214eeb178f914216e2265e14de9",
+    "stress_validation_cross_summary.csv": "1f335868d9bc1ba25866662f806f72a63ee751082964aabe790c9e4ef375d2f0",
+    "stress_validation_mae_comparison.html": "b86838dfc0db566979fe3c463ea9b64bcf19d619a7b4a7bb05f10195be2f71ca",
+    "stress_validation_intervals.csv": "67a80c9ae352125a780cd0e5c01a13a204054fcced6f6cc6719ada0dde82eee3",
+    "stress_validation_sensitivity.csv": "e1fb49de9a5c7cbf77c12df38014dd9102aebf12a2ad6028c4b01b6760be558b",
+    "stress_validation_regime_summary.csv": "576bbde1eb35533c01839ef44b23c527a41fac2e02aa844b2f08787d1b28433a",
+    "stress_validation_rows.csv": "ba813af9b89d897e70c9ebd7e638b635d6ad484b6f0f521ea5d775090042bb42",
+    "stress_validation_bias_comparison.html": "c2bacc4ef271f7226856b828a643cdbcceafe413188bfd83c2413b20661c6b6e",
+    "stress_validation_manifest.json": "d1d469f3bf81739deefbc9e754e5daf4d55886c938ef40fdec1c5ee56a212b66",
+    "stress_validation_worst_windows.csv": "7de25b10a1331a3e14720c07c3a4221a5242d388f0f0c69dc054c53aa2dc7c90",
+    "stress_validation_mae_comparison.json": "70d6ee61bf52d00dc2cbd5f325c10878385186f4a15a4561789f379c1c3324dd"
+  },
+  "code_sha256": {
+    "analysis/portfolio_regime_stress_diagnostics.py": "d64b3c25e6c7aa74fd5b28e48c53bff063ca110ad4e5d8d278274ae87f31055d",
+    "tests/test_portfolio_regime_stress_diagnostics.py": "06fb8e881c38ca06fa63ebef21c0f9dd583a0fa30befa3e79d9778fa555103b3"
+  }
+}

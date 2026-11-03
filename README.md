@@ -232,6 +232,23 @@ and tail-underestimation errors relative to the first revision. They are not
 selected to replace that candidate. Training-block dates, counts and missing
 endpoint exclusions are retained for inspection.
 
+### Stress 검증: situation-specific error diagnostics
+
+The [situation diagnostics](reports/portfolio/regime_stress/stress_validation_report.md)
+partition the first revision's fixed 145 intervals by realized equity/rate
+shocks. They report error direction, actual-loss-only underestimation, additive
+error contributions, chronological halves and a fixed nine-definition threshold
+sensitivity check. No model is refitted or selected by regime.
+
+```bash
+python -m analysis.portfolio_regime_stress_diagnostics
+python -m pytest tests/test_portfolio_regime_stress_diagnostics.py
+```
+
+The primary equity-down and joint-shock buckets have only three and two
+intervals. Some bias directions change across periods or thresholds, so these
+diagnostics do not establish a stable correction or a prospective regime rule.
+
 Run the real analysis code against the fixed requests without downloading data:
 
 ```bash
