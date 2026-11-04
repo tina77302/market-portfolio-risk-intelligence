@@ -14,6 +14,7 @@ import zipfile
 
 WORKFLOW = "portfolio-forward-validation.yml"
 ARTIFACT = "portfolio-forward-state"
+ALLOWED_EVENTS = ("schedule", "workflow_dispatch", "push")
 
 
 class SafeRedirect(urllib.request.HTTPRedirectHandler):
@@ -60,7 +61,7 @@ def main():
         if run_id == current:
             continue
         run = request(f"/repos/{repository}/actions/runs/{run_id}")
-        if run["path"] != f".github/workflows/{WORKFLOW}" or run["event"] not in ("schedule", "workflow_dispatch") or run["head_branch"] != branch:
+        if run["path"] != f".github/workflows/{WORKFLOW}" or run["event"] not in ALLOWED_EVENTS or run["head_branch"] != branch:
             continue
         if artifact["expired"]:
             raise RuntimeError("latest forward state expired; restore an archive, do not bootstrap")
@@ -70,7 +71,7 @@ def main():
     if not restored:
         runs = request(f"/repos/{repository}/actions/workflows/{WORKFLOW}/runs?per_page=100")
         prior = [r for r in runs["workflow_runs"] if r["id"] != current and r["head_branch"] == branch
-                 and r["event"] in ("schedule", "workflow_dispatch")]
+                 and r["event"] in ALLOWED_EVENTS]
         if prior:
             raise RuntimeError("previous run exists but no restorable state; refusing silent reset")
     version = json.loads((target / "policy.json").read_text())["payload"]["runtime"]["python"] if restored else "3.12"
