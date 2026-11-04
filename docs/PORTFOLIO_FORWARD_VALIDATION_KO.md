@@ -77,11 +77,29 @@ artifact 보관 기간은 90일로 설정했고 매 실행의 보관소에는 �
 
 처음 실행할 때도 이미 이전 실행이 있었는데 artifact가 없으면 복구를 요구합니다. 이 경우 새 성과로 이어 붙이지 말고 보관본을 복원하거나 별도의 실험 이름으로 시작해야 합니다.
 
+## 수집 실패와 예약 누락 알림
+
+수집 워크플로는 상태를 보관한 뒤에도 입력 문제를 성공으로 숨기지 않습니다. 수집 단계 다음의 상태 점검에서 `WAITING_FOR_INPUT`, `WAITING_FOR_FRESH_INPUT`, `WAITING_FOR_ENDPOINT_RATE`를 발견하면 Actions 오류와 실패 종료를 기록합니다. 정상적인 시작·결과 대기와 완료 상태는 알림 대상이 아닙니다. 상태 기록이 30분 넘게 오래됐거나 입력 가격이 뉴욕 당일 자료 또는 4일 넘게 오래된 자료인 경우에도 실패합니다. 상태 파일이 없거나 손상된 경우는 감시 실패로 표시합니다.
+
+이 점검은 모델·계수·정책·발행 기록을 변경하지 않습니다. 점검이 실패해도 기존 상태 보관 단계는 실행되며, `health.json`을 같은 `portfolio-forward-state` artifact에 포함합니다. 설치·복원·수집 명령 자체의 오류는 기존 Actions 실패로 표시됩니다.
+
+별도 [감시 워크플로](../.github/workflows/portfolio-forward-watchdog.yml)는 매일 UTC 02:17, 한국 시간 11:17에 실행합니다. 가장 최근 UTC 평일 23:37의 수집 예약을 대상으로 90분의 지연 허용 시간을 둡니다. 해당 기본 브랜치의 **schedule 이벤트**가 없거나 아직 완료되지 않았거나 실패·취소·건너뜀으로 끝나면 감시 워크플로를 실패시킵니다. push·수동 실행 성공은 누락된 예약을 대신하지 않습니다. 주말에는 금요일의 마지막 예약을 확인하고, 워크플로가 처음 만들어진 시각보다 앞선 예약은 요구하지 않습니다. 수집 워크플로가 비활성화됐거나 API 조회가 실패해도 정상으로 판단하지 않습니다.
+
+감시 결과는 실행 요약과 `portfolio-forward-health` artifact에 30일간 보관합니다. 수집·감시 워크플로 모두 Actions 화면에서 수동 실행할 수 있습니다. 로컬 상태 파일 점검은 다음과 같습니다.
+
+```bash
+python scripts/check_portfolio_forward_health.py status
+```
+
+알림 전달은 **GitHub Actions 기본 실패 알림**을 사용합니다. GitHub 계정의 [알림 설정](https://github.com/settings/notifications)에서 Actions의 메일 또는 GitHub 웹 알림을 켜고 필요하면 실패 실행만 받도록 설정해야 합니다. 계정의 수신 설정이나 실제 메일 수신 여부는 이 코드에서 변경·검증하지 않습니다. 예약 알림 수신자는 GitHub의 예약 워크플로 actor 규칙을 따릅니다. [Actions 알림 설정 문서](https://docs.github.com/en/subscriptions-and-notifications/how-tos/managing-github-actions-notifications), [예약 이벤트와 알림 수신자 문서](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule)
+
+감시도 GitHub Actions에서 실행하므로 GitHub 전체 장애나 두 예약의 동시 누락을 독립적으로 탐지하지는 못합니다. 이런 경우까지 보장하려면 별도 서비스의 외부 감시가 필요합니다. 실제 장애를 만들어 알림을 보내는 대신, 누락·취소·수집 실패·정상 대기·주말·첫 배포 조건은 임시 테스트 자료로 검증합니다.
+
 ## 현재 점검 결과
 
 실제 연결·등록 상태는 [실행 점검 보고서](../reports/portfolio/forward_stress/stress_validation_report.md)에 기록합니다.
 검증 테스트의 가상 시장 자료는 임시 디렉터리에서만 사용하며 실제 새 기간 성과에 포함하지 않습니다.
 
 ```bash
-python -m pytest tests/test_portfolio_forward_validation.py
+python -m pytest tests/test_portfolio_forward_validation.py tests/test_portfolio_forward_health.py tests/test_portfolio_data.py
 ```

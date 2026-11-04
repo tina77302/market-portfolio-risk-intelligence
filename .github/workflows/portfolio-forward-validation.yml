@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/portfolio-forward-validation.yml'
       - 'src/portfolio/data.py'
+      - 'scripts/check_portfolio_forward_health.py'
   schedule:
     - cron: '37 23 * * 1-5'
 
@@ -40,7 +41,11 @@ jobs:
             python -m pip install -r requirements.txt
           fi
       - name: Collect inputs and advance pending validation
+        id: collect
         run: python -m src.portfolio.forward_validation run --refresh
+      - name: Report collection problems as workflow failures
+        if: always() && steps.collect.outcome == 'success'
+        run: python scripts/check_portfolio_forward_health.py status --output data/portfolio_forward_validation/health.json
       - name: Preserve policy, frozen issues, observations and results
         if: always() && steps.state.outcome == 'success'
         uses: actions/upload-artifact@v4

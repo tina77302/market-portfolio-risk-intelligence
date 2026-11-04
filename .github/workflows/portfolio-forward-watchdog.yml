@@ -1,0 +1,39 @@
+name: Portfolio forward watchdog
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/portfolio-forward-watchdog.yml'
+      - 'scripts/check_portfolio_forward_health.py'
+  schedule:
+    # Separate from collection: UTC 02:17, 160 minutes after its 23:37 slot.
+    - cron: '17 2 * * *'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: portfolio-forward-watchdog
+  cancel-in-progress: false
+
+jobs:
+  check-scheduled-collection:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+      - name: Check for missing or failed scheduled collection
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/check_portfolio_forward_health.py schedule --output "$RUNNER_TEMP/portfolio-forward-health.json"
+      - name: Preserve health report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: portfolio-forward-health
+          path: ${{ runner.temp }}/portfolio-forward-health.json
+          retention-days: 30
+          if-no-files-found: error
