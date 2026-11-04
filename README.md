@@ -44,6 +44,9 @@ See [frontend usage](frontend/README.md) and
 
 ## Portfolio Module
 
+To run the full demo (API + dashboard) and present it step by step, see
+[docs/PORTFOLIO_DEMO.md](docs/PORTFOLIO_DEMO.md).
+
 ```bash
 python -m src.portfolio.data        # fetch prices, VIX, DGS10 into data/raw/ (gitignored)
 python -m src.portfolio.snapshot    # freeze data/portfolio/prices.csv, factors.csv as of the latest complete date

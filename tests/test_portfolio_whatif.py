@@ -51,7 +51,7 @@ def test_compare_rows_match_each_side_of_the_analysis():
     assert rows["max_sector_weight"]["current_detail"] == "Information Technology"
 
 
-def test_moving_into_bonds_and_gold_trades_equity_loss_for_rate_loss():
+def test_moving_into_treasuries_trades_equity_loss_for_rate_loss():
     rows = {r["metric"]: r for r in _compare(_demo("before"), _demo("after")).json()["comparison"]}
 
     assert rows["volatility"]["change"] < 0

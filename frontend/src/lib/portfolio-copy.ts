@@ -11,7 +11,7 @@ export const portfolioCopy = {
  checkMarket: ["Check market risk first", "시장 위험 먼저 확인"],
  marketTitle: ["Market risk", "시장 위험"],
  marketNote: ["The portfolio holds U.S. assets, so the U.S. market card from the dashboard is shown.", "포트폴리오가 미국 자산이므로 대시보드의 미국 시장 카드를 보여줍니다."],
- dateGap: ["Dates differ: market research snapshot {market}, portfolio data {portfolio}.", "기준일이 다릅니다: 시장 연구 스냅샷 {market}, 포트폴리오 데이터 {portfolio}."],
+ dateGap: ["Dates differ: latest U.S. market source {market}, portfolio data {portfolio}.", "기준일이 다릅니다: 미국 시장 최신 원천 관측일 {market}, 포트폴리오 데이터 {portfolio}."],
  inputTitle: ["Portfolio input", "포트폴리오 입력"],
  inputNote: ["Up to 10 supported U.S. stocks and ETFs. Weights must sum to 100%.", "지원 미국 주식·ETF 최대 10개, 비중 합계 100%."],
  asset: ["Asset", "자산"], weight: ["Weight (%)", "비중 (%)"], valueLabel: ["Portfolio value (USD)", "평가금액 (USD)"],
@@ -57,3 +57,20 @@ export const portfolioCopy = {
 } as const;
 
 export type PortfolioCopyKey = keyof typeof portfolioCopy;
+
+// English rendering of the API's fixed Korean interpretation text
+// (src/portfolio/universe.py describe_sector_methodology, src/portfolio/scenarios.py
+// describe_methodology and the scenarios note). Korean mode shows the API text itself.
+export const apiTextEn = {
+ sectorLabel: "Asset-level classification weights (ETF holdings not expanded)",
+ sectorLimitations: [
+  "Each ETF counts as one asset; overlap between ETF holdings and direct holdings is not calculated.",
+  "Broad Equity, Treasury, Credit and Commodity are asset categories, not actual sector exposure.",
+ ],
+ methodLimitations: (horizonDays: number) => [
+  "Each beta comes from a separate one-factor regression; it is not the factor's effect after controlling for the others.",
+  "Correlated factors can reflect the same market move, so scenario losses are never added up.",
+  `A daily beta times a ${horizonDays}-trading-day shock is a linear approximation, not a forecast of future losses or their probability.`,
+ ],
+ scenarioNote: "Estimates under predefined shock assumptions, not a forecast of future losses.",
+};
