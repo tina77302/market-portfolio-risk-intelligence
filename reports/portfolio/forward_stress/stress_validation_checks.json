@@ -1,0 +1,48 @@
+{
+  "status": "implementation verified locally; actual collection waiting; no prospective evaluations",
+  "tests": {
+    "passed": 96,
+    "failed": 0,
+    "new_forward_pipeline_tests": 10,
+    "command": "python -m pytest tests/test_portfolio_forward_validation.py tests/test_portfolio_error_band_validation.py tests/test_portfolio_regime_stress_diagnostics.py tests/test_portfolio_horizon_stress_experiment.py tests/test_portfolio_joint_stress_experiment.py tests/test_portfolio_stress_validation.py tests/test_portfolio_factors.py tests/test_portfolio_stress.py tests/test_portfolio_analytics.py tests/test_portfolio_snapshot.py tests/test_portfolio_universe.py -q"
+  },
+  "actual_status": {
+    "at": "2026-11-04T05:19:51.701396+00:00",
+    "status": "WAITING_FOR_INPUT",
+    "fetch_error_type": "ConnectionError",
+    "last_archived_input_as_of": "2026-10-23",
+    "prospective_evaluations": 0
+  },
+  "policy_sha256": "467a04026c0003383afd49c0f74f8207c487fb84cbeec26ba8dfd980fe0b0573",
+  "demo_expected_json_check": "passed",
+  "scheduler": {
+    "configuration": ".github/workflows/portfolio-forward-validation.yml",
+    "enabled_remotely": false,
+    "remote_restore_or_upload_exercised": false,
+    "schedule_utc": "37 23 * * 1-5"
+  },
+  "preservation": {
+    "original_research_inputs_and_outputs": true,
+    "production_api_and_demo": true
+  },
+  "limits": [
+    "live FRED collection failed with ConnectionError",
+    "no genuine prospective loss/outcome recorded yet",
+    "artifact preservation tested locally with synthetic ZIPs; remote API path not exercised",
+    "local trusted-clock/hash provenance is not external notarization",
+    "observed SPY bars are not an independently reconciled exchange calendar",
+    "adjusted-close endpoint vintage policy retained",
+    "same-day NY bars ignored conservatively"
+  ],
+  "code_and_config_sha256": {
+    "src/portfolio/forward_validation.py": "b8cfbe30f6f412013dce498caba224769c9dc28f0f6408baa416db40523a18d3",
+    "scripts/restore_portfolio_forward_state.py": "f751a3abc14a8abfededec58af25be2e19bea9cdd77f6efdb0de433bed3fef28",
+    ".github/workflows/portfolio-forward-validation.yml": "20dc595e57f516bba2c7f9c3dfce0e3e422312a9963123cecc89567e81ffa509",
+    "tests/test_portfolio_forward_validation.py": "e4110debd48b4983884d68ab0ee895c19cb6d56eab507cba7c8e15e456ed3859",
+    "docs/PORTFOLIO_FORWARD_VALIDATION_KO.md": "a12eec9df95d65d277e016585086f40acd1d5e2c4e1f2dd0c0cffb4cabda8372"
+  },
+  "output_sha256": {
+    "stress_validation_report.md": "716ad43e64bcd5dd822f8d9e191b5e51cb9a721226419274e9f88ac79e430661",
+    "stress_validation_status.json": "7c5b4674a31b4bd9cfe8db53a79596f5a9091e240b58a47c1429b79ac08da5f6"
+  }
+}

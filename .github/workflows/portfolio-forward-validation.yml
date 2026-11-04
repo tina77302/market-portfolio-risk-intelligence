@@ -1,0 +1,46 @@
+name: Portfolio forward validation
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '37 23 * * 1-5'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: portfolio-forward-validation
+  cancel-in-progress: false
+
+jobs:
+  collect-freeze-evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - name: Restore immutable validation history
+        id: state
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/restore_portfolio_forward_state.py
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ steps.state.outputs.python-version }}
+      - name: Install original or frozen dependencies
+        run: |
+          if [ -f data/portfolio_forward_validation/requirements.freeze.txt ]; then
+            python -m pip install -r data/portfolio_forward_validation/requirements.freeze.txt
+          else
+            python -m pip install -r requirements.txt
+          fi
+      - name: Collect inputs and advance pending validation
+        run: python -m src.portfolio.forward_validation run --refresh
+      - name: Preserve policy, frozen issues, observations and results
+        if: always() && steps.state.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: portfolio-forward-state
+          path: data/portfolio_forward_validation/
+          retention-days: 90
+          if-no-files-found: error

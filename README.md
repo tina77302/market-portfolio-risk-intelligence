@@ -268,6 +268,25 @@ The 90% target is a design setting, not a guaranteed future probability. Overall
 historical coverage exceeds 90%, while loss-only coverage is lower and the bands
 remain wide. No production forecast or loss limit is implied.
 
+### Stress 검증: paper-forward collection pipeline
+
+The [new-period pipeline](docs/PORTFOLIO_FORWARD_VALIDATION_KO.md) seals the
+rules/runtime, then freezes each interval's betas and historical-error offsets
+before its start. It evaluates only after ten further observed SPY sessions,
+appends immutable receipts/results, and exports cumulative conditional-error
+and coverage metrics. Historical warm-start errors are excluded from forward
+performance counts. Stale inputs and collection failures remain waiting states.
+
+```bash
+python -m src.portfolio.forward_validation run --refresh
+python -m src.portfolio.forward_validation status
+python -m pytest tests/test_portfolio_forward_validation.py
+```
+
+The GitHub Actions workflow includes weekday collection and state restoration;
+it runs only after the workflow is present on the remote default branch and
+Actions is enabled. See the [actual readiness check](reports/portfolio/forward_stress/stress_validation_report.md).
+
 Run the real analysis code against the fixed requests without downloading data:
 
 ```bash

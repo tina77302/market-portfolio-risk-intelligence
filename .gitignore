@@ -11,3 +11,4 @@ data/processed/
 *.log
 
 data/operations/
+data/portfolio_forward_validation/
