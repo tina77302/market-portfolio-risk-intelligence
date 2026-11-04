@@ -1,6 +1,8 @@
 import json
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+
+from src.portfolio.readiness import require_snapshot
 
 from src.portfolio.analytics import (
     analyze_portfolio,
@@ -24,7 +26,7 @@ from src.portfolio.universe import describe_sector_methodology, load_universe
 from src.portfolio.whatif import compare_analyses
 
 # 메인 앱에서 app.include_router(router) 한 줄로 연결합니다.
-router = APIRouter(prefix="/api/portfolio", tags=["portfolio"])
+router = APIRouter(prefix="/api/portfolio", tags=["portfolio"], dependencies=[Depends(require_snapshot)])
 
 
 @router.get("/universe")

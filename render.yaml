@@ -1,0 +1,44 @@
+# Preparation only: Blueprint creation triggers actual deployments. Do not apply before approval.
+# Free API cannot receive private-network traffic: use its real public HTTPS URL.
+services:
+  - type: web
+    name: mpri-portfolio-api
+    runtime: python
+    region: singapore
+    plan: free
+    branch: feature/mvp-release-readiness
+    autoDeployTrigger: "off"
+    buildCommand: pip install -r requirements.portfolio.txt && python -c 'from src.portfolio.readiness import require_snapshot; require_snapshot()'
+    startCommand: python -m uvicorn src.portfolio.server:app --host 0.0.0.0 --port $PORT --workers 1
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.14.4
+      # Enter the actual frontend origin, e.g. https://<assigned-web-host>.onrender.com.
+      # No wildcard, path or trailing slash. CORS is not authentication.
+      - key: PORTFOLIO_API_CORS_ORIGINS
+        sync: false
+      - key: PORTFOLIO_API_DOCS_ENABLED
+        value: "false"
+      - key: OMP_NUM_THREADS
+        value: "1"
+      - key: OPENBLAS_NUM_THREADS
+        value: "1"
+  - type: web
+    name: mpri-mvp-web
+    runtime: node
+    region: singapore
+    plan: free
+    rootDir: frontend
+    branch: feature/mvp-release-readiness
+    autoDeployTrigger: "off"
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start -- --hostname 0.0.0.0 --port $PORT
+    # Frontend health is independent of the free API's cold start.
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: 22.22.1
+      # Set after API deployment to its actual HTTPS origin, before building frontend.
+      - key: PORTFOLIO_API_INTERNAL_URL
+        sync: false

@@ -1,6 +1,6 @@
 // Portfolio API (FastAPI, src/portfolio/server.py) types and calls.
-// The browser calls the API directly; set NEXT_PUBLIC_PORTFOLIO_API_URL at build time.
-export const PORTFOLIO_API = process.env.NEXT_PUBLIC_PORTFOLIO_API_URL ?? "http://localhost:8000";
+// Same-origin proxy by default; an explicit public URL is an optional build-time override.
+export const PORTFOLIO_API = process.env.NEXT_PUBLIC_PORTFOLIO_API_URL ?? "";
 
 export type Factor = "market" | "rate" | "volatility";
 export type Holding = { ticker: string; weight: number };
@@ -29,23 +29,24 @@ export type Comparison = { current: Analysis; proposed: Analysis; comparison: Co
 
 // "network": the server could not be reached. "rejected": the API answered with an error (e.g. 422).
 export class PortfolioApiError extends Error {
- kind: "network" | "rejected";
- constructor(kind: "network" | "rejected", message: string) { super(message); this.kind = kind; }
+ kind: "network" | "rejected" | "unavailable";
+ constructor(kind: "network" | "rejected" | "unavailable", message: string) { super(message); this.kind = kind; }
 }
 
 async function request<T>(path: string, body?: unknown): Promise<T> {
  let response: Response;
  try {
-  response = await fetch(`${PORTFOLIO_API}/api/portfolio${path}`, body === undefined ? undefined : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  response = await fetch(`${PORTFOLIO_API}/api/portfolio${path}`, body === undefined ? { signal: AbortSignal.timeout(30_000) } : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: AbortSignal.timeout(30_000) });
  } catch {
   throw new PortfolioApiError("network", PORTFOLIO_API);
  }
  if (!response.ok) {
   const payload = await response.json().catch(() => null);
   const messages = Array.isArray(payload?.detail) ? payload.detail.map((d: { msg: string }) => d.msg.replace(/^Value error, /, "")) : [response.statusText];
-  throw new PortfolioApiError("rejected", messages.join(" · "));
+  throw new PortfolioApiError(response.status >= 500 ? "unavailable" : "rejected", messages.join(" · "));
  }
- return response.json() as Promise<T>;
+ try { return await response.json() as T; }
+ catch { throw new PortfolioApiError("unavailable", "Invalid JSON response"); }
 }
 
 export const getUniverse = () => request<Universe>("/universe");
@@ -58,9 +59,9 @@ export const comparePortfolios = (current: Holding[], proposed: Holding[], value
 export const MAX_HOLDINGS = 10;
 export type InputProblem = "empty" | "duplicate" | "max" | "sum" | "value" | null;
 export function inputProblem(holdings: Holding[], value: number): InputProblem {
- if (holdings.length === 0 || holdings.some(h => !h.ticker || !(h.weight > 0))) return "empty";
+ if (holdings.length === 0 || holdings.some(h => !h.ticker.trim() || !Number.isFinite(h.weight) || !(h.weight > 0) || h.weight > 100)) return "empty";
  if (holdings.length > MAX_HOLDINGS) return "max";
- if (new Set(holdings.map(h => h.ticker)).size !== holdings.length) return "duplicate";
+ if (new Set(holdings.map(h => h.ticker.trim().toUpperCase())).size !== holdings.length) return "duplicate";
  if (Math.abs(weightTotal(holdings) - 100) > 0.01) return "sum";
  if (!(value > 0) || !Number.isFinite(value)) return "value";
  return null;

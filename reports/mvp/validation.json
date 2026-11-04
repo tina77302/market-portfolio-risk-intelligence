@@ -1,0 +1,133 @@
+{
+  "date": "2026-11-03",
+  "branch": "feature/mvp-demo-stabilization",
+  "main_commit": "d2197c47f9ad05e7759522ebd5c312e90c0bfd91",
+  "pr4_commit": "ca51b9529cec164fd8ae36a6916873050406b4c5",
+  "p0_open": 0,
+  "pytest": {
+    "passed": 95,
+    "warnings": 1,
+    "environment": "project .venv"
+  },
+  "typescript": "passed",
+  "lint": "passed",
+  "charts": "passed",
+  "display_integration": "passed",
+  "production_build": "passed",
+  "actual_portfolio_http": "passed",
+  "portfolio_demo_check": "passed",
+  "browser": {
+    "routes": [
+      {
+        "route": "/",
+        "status": 200,
+        "active": true,
+        "noDocumentOverflow": true
+      },
+      {
+        "route": "/portfolio",
+        "status": 200,
+        "active": true,
+        "noDocumentOverflow": true
+      },
+      {
+        "route": "/korea",
+        "status": 200,
+        "active": true,
+        "noDocumentOverflow": true
+      },
+      {
+        "route": "/us",
+        "status": 200,
+        "active": true,
+        "noDocumentOverflow": true
+      },
+      {
+        "route": "/breadth",
+        "status": 200,
+        "active": true,
+        "noDocumentOverflow": true
+      },
+      {
+        "route": "/validation",
+        "status": 200,
+        "active": true,
+        "noDocumentOverflow": true
+      },
+      {
+        "route": "/cases",
+        "status": 200,
+        "active": true,
+        "noDocumentOverflow": true
+      },
+      {
+        "route": "/sources",
+        "status": 200,
+        "active": true,
+        "noDocumentOverflow": true
+      },
+      {
+        "route": "/methodology",
+        "status": 200,
+        "active": true,
+        "noDocumentOverflow": true
+      }
+    ],
+    "mobile": [
+      {
+        "width": 390,
+        "route": "/",
+        "noDocumentOverflow": true
+      },
+      {
+        "width": 390,
+        "route": "/portfolio",
+        "noDocumentOverflow": true
+      },
+      {
+        "width": 390,
+        "route": "/korea",
+        "noDocumentOverflow": true
+      },
+      {
+        "width": 390,
+        "route": "/us",
+        "noDocumentOverflow": true
+      },
+      {
+        "width": 360,
+        "route": "/",
+        "noDocumentOverflow": true
+      },
+      {
+        "width": 360,
+        "route": "/portfolio",
+        "noDocumentOverflow": true
+      },
+      {
+        "width": 360,
+        "route": "/korea",
+        "noDocumentOverflow": true
+      },
+      {
+        "width": 360,
+        "route": "/us",
+        "noDocumentOverflow": true
+      }
+    ],
+    "checks": [
+      "KR exact score/date and historic selection independent of current",
+      "US current withheld; historical inference separately dated",
+      "EN status, navigation and session persistence",
+      "Actual API → Hidden Risk Map, 3 Stress Test cards, invalid weights blocked, Analyze and What-if",
+      "360/390 mobile menu, route selection and KR/EN toggle",
+      "API-offline error is explicit; reload after restoration recovers"
+    ],
+    "errors": [],
+    "consoleErrors": []
+  },
+  "protected_files": 1525,
+  "changed_protected_files": [],
+  "raw_data_or_model_changed": false,
+  "push_merge_deployment": false
+}

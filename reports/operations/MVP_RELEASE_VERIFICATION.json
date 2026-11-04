@@ -1,0 +1,259 @@
+{
+  "date": "2026-11-03",
+  "base_main": "8c9ec9dbc65fd312d99b58d822a8739359855dd8",
+  "python": {
+    "passed": 101,
+    "warnings": 1
+  },
+  "typescript": "passed",
+  "lint": "passed",
+  "charts": "passed",
+  "market_integration": "passed",
+  "production_build": "passed",
+  "blueprint_schema": "passed",
+  "browser": {
+    "routes": [
+      {
+        "route": "/",
+        "status": 200,
+        "active": true,
+        "noDocumentOverflow": true
+      },
+      {
+        "route": "/portfolio",
+        "status": 200,
+        "active": true,
+        "noDocumentOverflow": true
+      },
+      {
+        "route": "/korea",
+        "status": 200,
+        "active": true,
+        "noDocumentOverflow": true
+      },
+      {
+        "route": "/us",
+        "status": 200,
+        "active": true,
+        "noDocumentOverflow": true
+      },
+      {
+        "route": "/breadth",
+        "status": 200,
+        "active": true,
+        "noDocumentOverflow": true
+      },
+      {
+        "route": "/validation",
+        "status": 200,
+        "active": true,
+        "noDocumentOverflow": true
+      },
+      {
+        "route": "/cases",
+        "status": 200,
+        "active": true,
+        "noDocumentOverflow": true
+      },
+      {
+        "route": "/sources",
+        "status": 200,
+        "active": true,
+        "noDocumentOverflow": true
+      },
+      {
+        "route": "/methodology",
+        "status": 200,
+        "active": true,
+        "noDocumentOverflow": true
+      }
+    ],
+    "mobile": [
+      {
+        "width": 390,
+        "route": "/",
+        "noDocumentOverflow": true
+      },
+      {
+        "width": 390,
+        "route": "/portfolio",
+        "noDocumentOverflow": true
+      },
+      {
+        "width": 390,
+        "route": "/korea",
+        "noDocumentOverflow": true
+      },
+      {
+        "width": 390,
+        "route": "/us",
+        "noDocumentOverflow": true
+      },
+      {
+        "width": 390,
+        "route": "/breadth",
+        "noDocumentOverflow": true
+      },
+      {
+        "width": 390,
+        "route": "/validation",
+        "noDocumentOverflow": true
+      },
+      {
+        "width": 390,
+        "route": "/cases",
+        "noDocumentOverflow": true
+      },
+      {
+        "width": 390,
+        "route": "/sources",
+        "noDocumentOverflow": true
+      },
+      {
+        "width": 390,
+        "route": "/methodology",
+        "noDocumentOverflow": true
+      },
+      {
+        "width": 360,
+        "route": "/",
+        "noDocumentOverflow": true
+      },
+      {
+        "width": 360,
+        "route": "/portfolio",
+        "noDocumentOverflow": true
+      },
+      {
+        "width": 360,
+        "route": "/korea",
+        "noDocumentOverflow": true
+      },
+      {
+        "width": 360,
+        "route": "/us",
+        "noDocumentOverflow": true
+      },
+      {
+        "width": 360,
+        "route": "/breadth",
+        "noDocumentOverflow": true
+      },
+      {
+        "width": 360,
+        "route": "/validation",
+        "noDocumentOverflow": true
+      },
+      {
+        "width": 360,
+        "route": "/cases",
+        "noDocumentOverflow": true
+      },
+      {
+        "width": 360,
+        "route": "/sources",
+        "noDocumentOverflow": true
+      },
+      {
+        "width": 360,
+        "route": "/methodology",
+        "noDocumentOverflow": true
+      }
+    ],
+    "checks": [
+      "KR exact score/date and historic selection independent of current",
+      "US current withheld; historical inference separately dated",
+      "EN status, all nine routes, navigation and session persistence",
+      "Actual API → Hidden Risk Map, 3 Stress Test cards, invalid weights blocked, Analyze and What-if",
+      "360/390 mobile menu, route selection and KR/EN toggle",
+      "API-offline error is explicit; reload after restoration recovers"
+    ],
+    "errors": [],
+    "consoleErrors": []
+  },
+  "portfolio_browser": {
+    "numeric": [
+      {
+        "sample": "before",
+        "summary": [
+          "23.4%",
+          "30.0%",
+          "80.0%",
+          "1.30"
+        ],
+        "correlationCells": 16,
+        "factorRows": 5,
+        "stressScenarios": 3,
+        "allDisplayedValuesMatchApi": true
+      },
+      {
+        "sample": "whatif",
+        "rows": 10,
+        "allDisplayedValuesMatchApi": true
+      },
+      {
+        "sample": "spy_only",
+        "summary": [
+          "15.2%",
+          "100.0%",
+          "100.0%",
+          "1.00"
+        ],
+        "correlationCells": 1,
+        "factorRows": 2,
+        "stressScenarios": 3,
+        "allDisplayedValuesMatchApi": true
+      },
+      {
+        "sample": "tlt_only",
+        "summary": [
+          "13.0%",
+          "100.0%",
+          "100.0%",
+          "0.12"
+        ],
+        "correlationCells": 1,
+        "factorRows": 2,
+        "stressScenarios": 3,
+        "allDisplayedValuesMatchApi": true
+      },
+      {
+        "sample": "balanced",
+        "summary": [
+          "11.1%",
+          "60.0%",
+          "60.0%",
+          "0.66"
+        ],
+        "correlationCells": 9,
+        "factorRows": 4,
+        "stressScenarios": 3,
+        "allDisplayedValuesMatchApi": true
+      },
+      {
+        "sample": "after",
+        "summary": [
+          "16.9%",
+          "30.0%",
+          "56.0%",
+          "0.94"
+        ],
+        "correlationCells": 25,
+        "factorRows": 6,
+        "stressScenarios": 3,
+        "allDisplayedValuesMatchApi": true
+      }
+    ],
+    "exceptions": [
+      "blank/incorrect weight blocked before POST",
+      "last holding cannot be removed; empty ticker disables analysis",
+      "server500 handled without page crash",
+      "validation422 handled without page crash",
+      "optionalNull handled without page crash",
+      "scenario500 handled without page crash"
+    ],
+    "errors": []
+  },
+  "secret_patterns": [],
+  "deployed": false
+}

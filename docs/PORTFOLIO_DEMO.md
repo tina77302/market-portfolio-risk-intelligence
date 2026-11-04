@@ -35,10 +35,12 @@ npm run dev
 
 `http://localhost:3000/portfolio`를 엽니다. 사이드바의 "포트폴리오 분석" 메뉴로도 들어갈 수 있습니다.
 
-주소나 포트를 바꿀 때는 두 가지를 함께 맞춥니다.
+브라우저는 대시보드와 같은 주소의 `/api/portfolio/...`를 부르고, 대시보드 서버가 그 요청을 API로 넘깁니다. 그래서 로컬에서는 CORS 설정이 필요 없습니다. API 주소나 포트를 바꿀 때는 대시보드 쪽에 한 가지만 설정합니다.
 
-- 대시보드가 부를 API 주소: `NEXT_PUBLIC_PORTFOLIO_API_URL=http://<host>:<port> npm run dev`. 빌드할 때 값이 고정되므로 `npm run build` 전에 설정합니다.
-- API가 허용할 대시보드 주소: `PORTFOLIO_API_CORS_ORIGINS=http://<대시보드 주소>`. 여러 개는 쉼표로 구분합니다. 기본값은 `http://localhost:3000`입니다.
+- `PORTFOLIO_API_INTERNAL_URL=http://<host>:<port> npm run dev` (기본값 `http://127.0.0.1:8000`). `npm run build`로 빌드할 때도 빌드 전에 설정합니다.
+- 브라우저가 API를 직접 부르게 하려면 `NEXT_PUBLIC_PORTFOLIO_API_URL`을 빌드 전에 지정하고, API 쪽 `PORTFOLIO_API_CORS_ORIGINS`에 대시보드 주소를 넣습니다. 보통은 필요 없습니다.
+
+Render 배포와 배포 환경 점검은 [docs/DEPLOYMENT_KO.md](DEPLOYMENT_KO.md)와 [docs/MVP_DEMO_KO.md](MVP_DEMO_KO.md)를 참고하세요.
 
 ## 3. 발표 전 점검 (2분)
 
@@ -85,8 +87,10 @@ cd frontend && npm run build                    # 대시보드 빌드
 
 | 증상 | 원인과 해결 |
 | --- | --- |
-| "포트폴리오 API 서버에 연결할 수 없습니다" | 터미널 1의 API가 꺼져 있습니다. API를 먼저 실행합니다. |
-| 브라우저 콘솔에 CORS 오류 | 대시보드 주소가 API 허용 목록에 없습니다. `PORTFOLIO_API_CORS_ORIGINS`를 맞춥니다. |
+| "분석 데이터가 누락되었거나 서비스 응답을 확인할 수 없습니다" | 가장 흔한 원인은 터미널 1의 API가 꺼져 있거나 `PORTFOLIO_API_INTERNAL_URL`이 다른 주소를 가리키는 경우입니다(대시보드가 대신 500 오류로 답함). API를 먼저 실행합니다. API가 켜져 있는데도 나오면, `data/portfolio/` 스냅샷이 `config/portfolio-snapshot.sha256.json`의 해시와 달라 API가 503으로 계산을 거부한 것입니다. 스냅샷 파일을 고치지 않았는지 확인합니다. |
+| "포트폴리오 분석 서비스에 연결할 수 없습니다" | 대시보드 서버 자체에 연결되지 않은 경우입니다(터미널 2 확인). |
+| 입력을 바꾸자 결과가 사라짐 | 정상입니다. 바뀐 입력과 맞지 않는 결과를 남기지 않도록 지우는 것이니 "분석" 또는 "비교"를 다시 누릅니다. |
+| 브라우저 콘솔에 CORS 오류 | `NEXT_PUBLIC_PORTFOLIO_API_URL`로 API를 직접 부르는 경우에만 생깁니다. `PORTFOLIO_API_CORS_ORIGINS`에 대시보드 주소를 넣습니다. |
 | 시장 카드에 N/A | 정상입니다. 해당 날짜에 확정 관측값이 없으면 점수를 만들거나 이월하지 않습니다. |
-| 8000번 포트 사용 중 | `--port 8001`로 띄우고 `NEXT_PUBLIC_PORTFOLIO_API_URL`도 같은 포트로 바꿉니다. |
+| 8000번 포트 사용 중 | `--port 8001`로 띄우고 대시보드의 `PORTFOLIO_API_INTERNAL_URL`도 같은 포트로 바꿉니다. |
 | 수치가 위 표와 다름 | `python -m src.portfolio.demo --check`로 확인합니다. 데이터를 새로 받으면(`python -m src.portfolio.data` 이후 snapshot, scenarios 재생성) 수치가 바뀝니다. |

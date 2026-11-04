@@ -130,7 +130,7 @@ export function StressTest({ analysis, scenarios }: { analysis: Analysis; scenar
  const english = useDashboard().language === "en";
  const limitations = english ? apiTextEn.methodLimitations(analysis.methodology.shock_horizon_days) : analysis.methodology.limitations;
  const note = english ? apiTextEn.scenarioNote : scenarios?.note;
- if (!analysis.stress) return null;
+ if (!analysis.stress?.length) return <section className="panel" role="status"><h2>{p("stressTitle")}</h2><p>{p("stressUnavailable")}</p></section>;
  return <>
   <div className={styles.sectionTitle}><span className={styles.step}>STEP 4</span><h2>{p("stressTitle")}</h2><p>{p("stressIntro")}</p></div>
   <div className={styles.stressGrid}>{analysis.stress.map(s => {

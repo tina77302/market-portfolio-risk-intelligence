@@ -9,11 +9,17 @@ npm run build
 npm start
 ```
 
+## MVP demo
+
+For the existing Portfolio API startup, frozen snapshots, environment setup and demo steps,
+see [MVP demo guide](../docs/MVP_DEMO_KO.md). No live collection or model training is needed for the demo.
+
 ## Routes
 
 | Route | Content |
 | --- | --- |
 | `/` | Two-country overview, price/risk charts, Korea breadth/correlations, original US V1 performance, October timeline |
+| `/portfolio` | Existing Portfolio API, Hidden Risk Map, Stress Test and What-if |
 | `/us` | Separate original-V1 US history, stored metrics and observed stress rows |
 | `/korea` | Frozen V1, official MSI, historical selector, exact exported monitoring state, breadth, confirmation, validation and holdout |
 | `/breadth` | Korea diagnostics, stored correlation-date selector and breadth trend; US explicitly unavailable |
@@ -64,6 +70,7 @@ US detector. Diagonal cells are omitted.
 
 ```bash
 npm run test:charts
+npm run test:integration
 npx tsc --noEmit
 npm run lint
 npm run build
@@ -79,3 +86,5 @@ See [implementation, data coverage and verification](docs/REDESIGN.md) and
 현재 원천별 종료일, 과거 정상 표시 예시, OOS와 운영 추론의 구분 및 갱신 작업의
 우선순위는 [한국어 데이터 가용성 보고서](docs/DATA_AVAILABILITY_KO.md)를 참조하세요.
 보고서 작성 과정에서 수집·추론·재학습이나 데이터 덮어쓰기는 수행하지 않았습니다.
+
+배포 시 브라우저는 `/api/portfolio`를 같은 출처로 호출합니다. Next.js가 `PORTFOLIO_API_INTERNAL_URL` 또는 `PORTFOLIO_API_INTERNAL_HOSTPORT`로 프록시합니다(빌드 시 설정). 기본 로컬 API는 127.0.0.1:8000입니다. `NEXT_PUBLIC_PORTFOLIO_API_URL`은 직접 호출이 필요한 경우에만 설정하세요. 배포 및 롤백: [한국어 가이드](../docs/DEPLOYMENT_KO.md).

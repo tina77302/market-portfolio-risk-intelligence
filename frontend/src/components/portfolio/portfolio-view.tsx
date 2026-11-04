@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useDashboard } from "@/components/dashboard-shell";
 import { CountryCards } from "@/components/research-panels";
@@ -13,13 +13,14 @@ const toApiError = (e: unknown) => (e instanceof PortfolioApiError ? e : new Por
 
 function ApiProblem({ error }: { error: PortfolioApiError }) {
  const p = usePortfolioCopy();
- if (error.kind === "rejected") return <p className={styles.problem} role="alert">{p("apiRejected")} {error.message}</p>;
- return <section className={`panel ${styles.alert} ${styles.section}`} role="alert"><h2>{p("apiDown")} {error.message}</h2><p>{p("apiStart")}<br/><code>uvicorn src.portfolio.server:app --port 8000</code></p></section>;
+ const key = error.kind === "network" ? "apiDown" : error.kind === "unavailable" ? "apiUnavailable" : "apiRejected";
+ return <section className={`panel ${styles.alert} ${styles.section}`} role="alert"><h2>{p(key)}</h2><p>{p("apiRetry")}</p></section>;
 }
 
 export default function PortfolioView() {
  const p = usePortfolioCopy();
  const { global, operational } = useDashboard();
+ const revision = useRef(0);
  const [universe, setUniverse] = useState<Universe | null>(null);
  const [scenarios, setScenarios] = useState<Scenarios | null>(null);
  const [holdings, setHoldings] = useState<Holding[]>(exampleBefore);
@@ -33,28 +34,40 @@ export default function PortfolioView() {
  // Load the asset list, scenarios and the example portfolio once the page is in the browser.
  useEffect(() => {
   let active = true;
+  const initialRevision = revision.current;
   Promise.all([getUniverse(), getScenarios(), analyzePortfolio(exampleBefore, DEFAULT_VALUE)])
-   .then(([u, s, a]) => { if (active) { setUniverse(u); setScenarios(s); setAnalysis(a); } })
-   .catch(e => { if (active) setError({ task: "analyze", error: toApiError(e) }); })
+   .then(([u, s, a]) => { if (active) { setUniverse(u); setScenarios(s); if (revision.current === initialRevision) setAnalysis(a); } })
+   .catch(e => { if (active && revision.current === initialRevision) setError({ task: "analyze", error: toApiError(e) }); })
    .finally(() => { if (active) setBusy(null); });
   return () => { active = false; };
  }, []);
 
+ const changeCurrent = (next: Holding[]) => { revision.current++; setHoldings(next); setAnalysis(null); setComparison(null); setError(null); };
+ const changeValue = (next: number) => { revision.current++; setValue(next); setAnalysis(null); setComparison(null); setError(null); };
+ const changeProposed = (next: Holding[]) => { revision.current++; setProposed(next); setComparison(null); setError(null); };
  const run = async (task: Task) => {
+  const started = revision.current;
   setBusy(task);
+  setComparison(null);
+  if (task === "analyze") setAnalysis(null);
   setError(null);
   try {
-   if (task === "analyze") { setAnalysis(await analyzePortfolio(holdings, value)); setComparison(null); }
-   else setComparison(await comparePortfolios(holdings, proposed, value));
+   if (task === "analyze") {
+    const result = await analyzePortfolio(holdings, value);
+    if (revision.current === started) setAnalysis(result);
+   } else {
+    const result = await comparePortfolios(holdings, proposed, value);
+    if (revision.current === started) { setAnalysis(result.current); setComparison(result); }
+   }
   } catch (e) {
-   setError({ task, error: toApiError(e) });
+   if (revision.current === started) setError({ task, error: toApiError(e) });
   } finally {
    setBusy(null);
   }
  };
 
  const assets = universe?.assets ?? [];
- const network = error?.error.kind === "network" ? error.error : null;
+ const network = error && error.error.kind !== "rejected" ? error.error : null;
  // Same date the U.S. card shows: the operational source date when present, else the research snapshot.
  const marketAsOf = operational?.markets.us.expectedDate ?? global?.asOf ?? null;
  const portfolioAsOf = analysis?.as_of ?? scenarios?.as_of ?? null;
@@ -69,11 +82,11 @@ export default function PortfolioView() {
 
   <section className={`panel ${styles.section}`}>
    <div className="panel-header"><div className={styles.panelTitle}><span className={styles.step}>STEP 2</span><h2>{p("inputTitle")}</h2></div><span className="tag">{p("inputNote")}</span></div>
-   <HoldingsEditor label={p("current")} holdings={holdings} onChange={setHoldings} assets={assets} value={value}/>
+   <HoldingsEditor label={p("current")} holdings={holdings} onChange={changeCurrent} assets={assets} value={value}/>
    <div className={styles.editorFooter}>
-    <label className={styles.valueField}>{p("valueLabel")}<input type="number" inputMode="decimal" min="0" step="1000" value={Number.isFinite(value) ? value : ""} onChange={e => setValue(e.target.value === "" ? NaN : Number(e.target.value))}/></label>
+    <label className={styles.valueField}>{p("valueLabel")}<input type="number" inputMode="decimal" min="0" step="1000" value={Number.isFinite(value) ? value : ""} onChange={e => changeValue(e.target.value === "" ? NaN : Number(e.target.value))}/></label>
     <div className={styles.actions}>
-     <button type="button" onClick={() => setHoldings(exampleBefore)}>{p("example")}</button>
+     <button type="button" onClick={() => changeCurrent(exampleBefore)}>{p("example")}</button>
      <button type="button" className={styles.primary} disabled={busy !== null || inputProblem(holdings, value) !== null || !universe} onClick={() => run("analyze")}>{busy === "analyze" ? p("analyzing") : p("analyze")}</button>
     </div>
    </div>
@@ -81,13 +94,14 @@ export default function PortfolioView() {
    {error?.task === "analyze" && error.error.kind === "rejected" && <ApiProblem error={error.error}/>}
   </section>
 
+  {!analysis && !busy && <p role="status">{p("reanalyze")}</p>}
   {analysis && <><HiddenRiskMap analysis={analysis}/><StressTest analysis={analysis} scenarios={scenarios}/></>}
 
   <div className={styles.sectionTitle}><span className={styles.step}>STEP 5–6</span><h2>{p("whatifTitle")}</h2><p>{p("whatifIntro")}</p></div>
   <div className={styles.whatifGrid}>
    <section className="panel">
-    <div className={styles.actions}><button type="button" onClick={() => setProposed(holdings)}>{p("fromCurrent")}</button><button type="button" onClick={() => setProposed(exampleAfter)}>{p("exampleShift")}</button></div>
-    <div className={styles.section}><HoldingsEditor label={p("proposed")} holdings={proposed} onChange={setProposed} assets={assets} value={value}/></div>
+    <div className={styles.actions}><button type="button" onClick={() => changeProposed(holdings)}>{p("fromCurrent")}</button><button type="button" onClick={() => changeProposed(exampleAfter)}>{p("exampleShift")}</button></div>
+    <div className={styles.section}><HoldingsEditor label={p("proposed")} holdings={proposed} onChange={changeProposed} assets={assets} value={value}/></div>
     <div className={styles.editorFooter}><span/><button type="button" className={styles.primary} disabled={busy !== null || inputProblem(holdings, value) !== null || inputProblem(proposed, value) !== null || !universe} onClick={() => run("compare")}>{busy === "compare" ? p("comparing") : p("compare")}</button></div>
     {error?.task === "compare" && error.error.kind === "rejected" && <ApiProblem error={error.error}/>}
    </section>
