@@ -2,6 +2,7 @@ import argparse
 import logging
 from io import StringIO
 from pathlib import Path
+import time
 
 import pandas as pd
 import requests
@@ -25,6 +26,25 @@ DEFAULT_START = "2018-01-01"
 WINDOW_DAYS = 756
 
 
+class PriceCollectionError(RuntimeError):
+    """Yahoo did not return prices for every requested symbol."""
+
+
+def _download_closes(symbols, start, end):
+    # yfinance shares SQLite caches between ticker downloads. Serial downloads
+    # avoid the cache-initialization race seen on fresh Actions runners.
+    df = yf.download(
+        symbols, start=start, end=end, auto_adjust=True, progress=False,
+        threads=False, timeout=30,
+    )
+    # yfinance can log an error and return an empty/partial frame, without raising.
+    if df is None or df.empty or "Close" not in df:
+        return pd.DataFrame(columns=symbols, dtype=float)
+    close = df["Close"].reindex(columns=symbols).copy()
+    close.index = pd.to_datetime(close.index).tz_localize(None)
+    return close
+
+
 def fetch_prices(tickers, start, end=None):
     """
     지원 자산과 VIX의 일별 종가를 Yahoo Finance에서 수집합니다.
@@ -35,15 +55,29 @@ def fetch_prices(tickers, start, end=None):
     symbols = list(tickers) + ["^VIX"]
     logger.info(f"Fetching {len(symbols)} symbols from {start}...")
 
-    df = yf.download(
-        symbols,
-        start=start,
-        end=end,
-        auto_adjust=True,
-        progress=False
-    )
+    df_close = pd.DataFrame(columns=symbols, dtype=float)
+    pending = symbols
+    for attempt in range(3):
+        if attempt:
+            logger.warning("Retrying missing Yahoo symbols (%s/2): %s", attempt, ", ".join(pending))
+            time.sleep(attempt)
+        try:
+            downloaded = _download_closes(pending, start, end)
+        except Exception as exc:
+            logger.warning("Yahoo download failed: %s", type(exc).__name__)
+            continue
+        df_close = df_close.reindex(df_close.index.union(downloaded.index))
+        for symbol in pending:
+            # Replace a whole symbol history; never fill gaps with stale prices.
+            df_close[symbol] = downloaded[symbol].reindex(df_close.index)
+        pending = [symbol for symbol in symbols if df_close[symbol].notna().sum() == 0]
+        if not pending:
+            break
+    if pending:
+        message = "Yahoo prices unavailable after 3 attempts: " + ", ".join(pending)
+        logger.error(message)
+        raise PriceCollectionError(message)
 
-    df_close = df["Close"][symbols].copy()
     df_close = df_close.rename(columns={"^VIX": "VIX"})
     df_close.index = pd.to_datetime(df_close.index).tz_localize(None)
     df_close.index.name = "Date"

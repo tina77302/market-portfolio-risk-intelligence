@@ -4,7 +4,9 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['.github/workflows/portfolio-forward-validation.yml']
+    paths:
+      - '.github/workflows/portfolio-forward-validation.yml'
+      - 'src/portfolio/data.py'
   schedule:
     - cron: '37 23 * * 1-5'
 
