@@ -1,0 +1,77 @@
+name: Portfolio schedule probe
+
+on:
+  schedule:
+    # Temporary probe: 2026-11-05 10:47 KST / 01:47 UTC.
+    - cron: '47 1 5 11 *'
+
+permissions: {}
+
+concurrency:
+  group: portfolio-schedule-probe
+  cancel-in-progress: false
+
+jobs:
+  record-scheduled-event:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: read
+    steps:
+      - name: Record the actual scheduled event
+        env:
+          OBSERVED_EVENT: ${{ github.event_name }}
+          OBSERVED_SCHEDULE: ${{ github.event.schedule }}
+        run: |
+          python3 - <<'PY'
+          from datetime import datetime, timezone
+          import json
+          import os
+          from pathlib import Path
+
+          if os.environ["OBSERVED_EVENT"] != "schedule":
+              raise SystemExit("This probe requires a real schedule event.")
+          planned = datetime(2026, 11, 5, 1, 47, tzinfo=timezone.utc)
+          observed = datetime.now(timezone.utc)
+          # Cron has no year field. Expired runs only report and remove this file.
+          valid = planned.date() == observed.date() and observed >= planned
+          receipt = {
+              "status": "SCHEDULE_OBSERVED" if valid else "PROBE_EXPIRED",
+              "event": os.environ["OBSERVED_EVENT"],
+              "schedule": os.environ["OBSERVED_SCHEDULE"],
+              "planned_at": planned.isoformat(),
+              "observed_at": observed.isoformat(),
+              "delay_seconds": (observed - planned).total_seconds(),
+              "run_id": os.environ["GITHUB_RUN_ID"],
+              "collection_or_study_modified": False,
+          }
+          payload = json.dumps(receipt, indent=2) + "\n"
+          (Path(os.environ["RUNNER_TEMP"]) / "portfolio-schedule-probe.json").write_text(payload)
+          print(payload)
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as summary:
+              summary.write("### Temporary schedule probe\n\n```json\n" + payload + "```\n")
+          PY
+      - name: Preserve schedule receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: portfolio-schedule-probe
+          path: ${{ runner.temp }}/portfolio-schedule-probe.json
+          retention-days: 7
+          if-no-files-found: error
+
+  remove-temporary-probe:
+    needs: record-scheduled-event
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Remove only this temporary workflow after saving its receipt
+        run: |
+          probe_sha=$(gh api "repos/$GH_REPO/contents/.github/workflows/portfolio-schedule-probe.yml?ref=$GITHUB_SHA" --jq '.sha')
+          gh api --method DELETE "repos/$GH_REPO/contents/.github/workflows/portfolio-schedule-probe.yml" \
+            --raw-field message="ops: 임시 예약 점검 기록 보관 후 자동 제거" \
+            --raw-field branch=main --raw-field sha="$probe_sha"
