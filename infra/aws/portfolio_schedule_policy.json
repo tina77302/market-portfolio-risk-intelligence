@@ -1,0 +1,5 @@
+{
+  "mode": "github",
+  "activated_at": null,
+  "note": "Switch to aws-eventbridge only after an actual AWS one-time scheduled dispatch is verified."
+}

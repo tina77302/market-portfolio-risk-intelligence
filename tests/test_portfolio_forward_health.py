@@ -116,7 +116,7 @@ def test_api_pagination_and_non_main_default_branch():
             return {"workflow_runs": [run(head_branch="feature")] * 100}
         return {"workflow_runs": [run(head_branch="production")]}
 
-    assert health.scheduled_health("example/repo", NOW, get)["ok"]
+    assert health.scheduled_health("example/repo", NOW, get, policy={"mode": "github"})["ok"]
     assert len(requests) == 4
     assert "branch=production" in requests[-1]
     assert "event=schedule" in requests[-1]
@@ -146,7 +146,30 @@ def test_error_annotation_escapes_newlines_and_percent(tmp_path, capsys, monkeyp
 
 def test_watchdog_and_collection_schedule_contract_stays_in_sync():
     collection = (ROOT / health.WORKFLOW_PATH).read_text()
-    assert f"cron: '{health.COLLECTION_CRON}'" in collection
+    policy = json.loads(health.POLICY_PATH.read_text())
+    if policy["mode"] == "github":
+        assert f"cron: '{health.COLLECTION_CRON}'" in collection
+    else:
+        assert "  schedule:" not in collection
     assert "id: collect" in collection
     assert "steps.collect.outcome == 'success'" in collection
     assert collection.index("check_portfolio_forward_health.py status") < collection.index("uses: actions/upload-artifact")
+
+
+def test_external_schedule_requires_exact_provider_slot_and_success():
+    policy = {"mode": "aws-eventbridge", "activated_at": "2026-11-01T00:00:00Z"}
+    expected_title = "Portfolio forward validation | aws-eventbridge | 2026-11-03T23:37:00Z"
+    correct = run(event="workflow_dispatch", display_title=expected_title)
+    assert health.check_schedule(workflow(), [correct], "main", NOW, policy)["ok"]
+    impostors = [run(), run(event="workflow_dispatch"),
+                 run(event="workflow_dispatch", display_title=expected_title.replace("eventbridge", "verification")),
+                 run(event="workflow_dispatch", display_title=expected_title.replace("11-03", "11-02"))]
+    assert health.check_schedule(workflow(), impostors, "main", NOW, policy)["code"] == "MISSING_SCHEDULE"
+    assert health.check_schedule(workflow(), [{**correct, "conclusion": "failure"}], "main", NOW, policy)["code"] == "SCHEDULE_FAILED"
+
+
+def test_external_activation_does_not_require_predeployment_runs():
+    policy = {"mode": "aws-eventbridge", "activated_at": "2026-11-04T01:00:00Z"}
+    assert health.check_schedule(workflow(), [], "main", NOW, policy)["code"] == "WAITING_FOR_FIRST_SCHEDULE"
+    with pytest.raises(ValueError):
+        health.check_schedule(workflow(), [], "main", NOW, {"mode": "aws-eventbridge", "activated_at": None})

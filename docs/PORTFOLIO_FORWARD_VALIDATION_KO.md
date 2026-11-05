@@ -95,6 +95,8 @@ python scripts/check_portfolio_forward_health.py status
 
 감시도 GitHub Actions에서 실행하므로 GitHub 전체 장애나 두 예약의 동시 누락을 독립적으로 탐지하지는 못합니다. 이런 경우까지 보장하려면 별도 서비스의 외부 감시가 필요합니다. 실제 장애를 만들어 알림을 보내는 대신, 누락·취소·수집 실패·정상 대기·주말·첫 배포 조건은 임시 테스트 자료로 검증합니다.
 
+AWS 외부 예약의 구성·인증 등록·실제 예약 검증은 [AWS 예약 운영 문서](PORTFOLIO_AWS_SCHEDULER_KO.md)를 따릅니다. 예약 공급자는 `infra/aws/portfolio_schedule_policy.json`으로 구분합니다. `github` 모드에서는 위의 `schedule` 이벤트를 확인하고, `aws-eventbridge` 모드에서는 정확한 예정 시각의 AWS 표시가 있는 `workflow_dispatch` 실행을 확인합니다. 일반 수동·push 실행과 AWS 시험 실행은 정기 예약 성공으로 합산하지 않습니다. AWS 활성화 전까지 기존 모드를 유지하며, 활성화 시 GitHub 자체 cron을 제거해 이중 예약을 막습니다.
+
 ## 현재 점검 결과
 
 실제 연결·등록 상태는 [실행 점검 보고서](../reports/portfolio/forward_stress/stress_validation_report.md)에 기록합니다.

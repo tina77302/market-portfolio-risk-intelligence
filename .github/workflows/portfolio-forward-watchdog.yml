@@ -1,12 +1,24 @@
 name: Portfolio forward watchdog
+run-name: ${{ format('Portfolio forward watchdog | {0} | {1}', inputs.scheduler_source || github.event_name, inputs.scheduled_for || github.sha) }}
 
 on:
   workflow_dispatch:
+    inputs:
+      scheduler_source:
+        description: 'Execution source.'
+        type: choice
+        options: [manual, aws-eventbridge]
+        default: manual
+      scheduled_for:
+        description: 'UTC planned time supplied by the external scheduler.'
+        type: string
+        required: false
   push:
     branches: [main]
     paths:
       - '.github/workflows/portfolio-forward-watchdog.yml'
       - 'scripts/check_portfolio_forward_health.py'
+      - 'infra/aws/portfolio_schedule_policy.json'
   schedule:
     # Separate from collection: UTC 02:17, 160 minutes after its 23:37 slot.
     - cron: '17 2 * * 0,1,2,3,4,5,6'

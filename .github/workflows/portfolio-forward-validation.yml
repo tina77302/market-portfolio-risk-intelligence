@@ -1,13 +1,25 @@
 name: Portfolio forward validation
+run-name: ${{ format('Portfolio forward validation | {0} | {1}', inputs.scheduler_source || github.event_name, inputs.scheduled_for || github.sha) }}
 
 on:
   workflow_dispatch:
+    inputs:
+      scheduler_source:
+        description: 'Execution source; AWS verification is separate from routine scheduling.'
+        type: choice
+        options: [manual, aws-eventbridge, aws-verification]
+        default: manual
+      scheduled_for:
+        description: 'UTC planned time supplied by the external scheduler.'
+        type: string
+        required: false
   push:
     branches: [main]
     paths:
       - '.github/workflows/portfolio-forward-validation.yml'
       - 'src/portfolio/data.py'
       - 'scripts/check_portfolio_forward_health.py'
+      - 'infra/aws/portfolio_schedule_policy.json'
   schedule:
     # Same weekdays/time; a new cron value refreshes the schedule registration.
     - cron: '37 23 * * 1,2,3,4,5'

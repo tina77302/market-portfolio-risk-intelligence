@@ -20,6 +20,7 @@ GRACE = timedelta(minutes=90)
 NY = ZoneInfo("America/New_York")
 HEALTHY_STATES = {"WAITING_FOR_START_SESSION", "WAITING_FOR_OUTCOME", "EVALUATED"}
 INPUT_STATES = {"WAITING_FOR_INPUT", "WAITING_FOR_FRESH_INPUT", "WAITING_FOR_ENDPOINT_RATE"}
+POLICY_PATH = Path(__file__).resolve().parents[1] / "infra/aws/portfolio_schedule_policy.json"
 
 
 def timestamp(value):
@@ -63,19 +64,31 @@ def latest_due(now):
     raise ValueError("no scheduled slot found")
 
 
-def check_schedule(workflow, runs, branch, now):
+def check_schedule(workflow, runs, branch, now, policy=None):
+    policy = policy or {"mode": "github"}
+    mode = policy["mode"]
+    if mode not in {"github", "aws-eventbridge"}:
+        raise ValueError("unknown schedule provider")
     due = latest_due(now)
-    details = {"expected_schedule_at": due.isoformat(), "grace_minutes": 90}
+    details = {"expected_schedule_at": due.isoformat(), "grace_minutes": 90, "expected_provider": mode}
     if workflow["path"] != WORKFLOW_PATH or workflow["state"] != "active":
         return report(False, "WORKFLOW_INACTIVE", "Collection workflow is missing, renamed or disabled.", now, **details)
-    if timestamp(workflow["created_at"]) > due:
+    if mode == "aws-eventbridge" and not isinstance(policy.get("activated_at"), str):
+        raise ValueError("external schedule activation is required")
+    activated = timestamp(policy["activated_at"]) if mode == "aws-eventbridge" else timestamp(workflow["created_at"])
+    if activated > now:
+        raise ValueError("schedule activation is in the future")
+    if activated > due:
         return report(True, "WAITING_FOR_FIRST_SCHEDULE", "No schedule was due since the workflow was created.", now, **details)
     if now < due + GRACE:
         return report(True, "SCHEDULE_GRACE_PERIOD", "The latest schedule is still within its delay allowance.", now, **details)
-    eligible = [r for r in runs if r["event"] == "schedule" and r["head_branch"] == branch
-                and r["path"] == WORKFLOW_PATH and due <= timestamp(r["created_at"]) <= now]
+    expected_event = "workflow_dispatch" if mode == "aws-eventbridge" else "schedule"
+    title = "Portfolio forward validation | aws-eventbridge | " + due.strftime("%Y-%m-%dT%H:%M:%SZ")
+    eligible = [r for r in runs if r["event"] == expected_event and r["head_branch"] == branch
+                and r["path"] == WORKFLOW_PATH and due <= timestamp(r["created_at"]) <= now
+                and (mode == "github" or r.get("display_title") == title)]
     if not eligible:
-        return report(False, "MISSING_SCHEDULE", "No scheduled collection run appeared within 90 minutes.", now, **details)
+        return report(False, "MISSING_SCHEDULE", f"No {mode} collection run appeared within 90 minutes.", now, **details)
     run = max(eligible, key=lambda r: (timestamp(r["created_at"]), r["id"]))
     details.update(run_id=run["id"], run_url=run["html_url"])
     if run["status"] != "completed":
@@ -95,14 +108,17 @@ def github_get(path):
         return json.load(response)
 
 
-def scheduled_health(repository, now, get=github_get):
+def scheduled_health(repository, now, get=github_get, policy=None):
+    if policy is None:
+        policy = json.loads(POLICY_PATH.read_text())
     if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository):
         raise ValueError("invalid repository identity")
     root = f"/repos/{repository}"
     branch = get(root)["default_branch"]
     workflow = get(f"{root}/actions/workflows/{WORKFLOW}")
     # Read every matching page; a burst of runs must not hide the schedule.
-    query = urllib.parse.urlencode({"event": "schedule", "branch": branch,
+    event = "workflow_dispatch" if policy["mode"] == "aws-eventbridge" else "schedule"
+    query = urllib.parse.urlencode({"event": event, "branch": branch,
                                    "created": ">=" + latest_due(now).isoformat(), "per_page": 100})
     runs = []
     for page in range(1, 11):
@@ -112,7 +128,7 @@ def scheduled_health(repository, now, get=github_get):
             break
     else:
         raise ValueError("run history pagination limit reached; cannot confirm schedule")
-    return check_schedule(workflow, runs, branch, now)
+    return check_schedule(workflow, runs, branch, now, policy)
 
 
 def emit(result, output=None):
