@@ -9,7 +9,8 @@ on:
       - 'src/portfolio/data.py'
       - 'scripts/check_portfolio_forward_health.py'
   schedule:
-    - cron: '37 23 * * 1-5'
+    # Same weekdays/time; a new cron value refreshes the schedule registration.
+    - cron: '37 23 * * 1,2,3,4,5'
 
 permissions:
   contents: read

@@ -15,7 +15,7 @@ from zoneinfo import ZoneInfo
 
 WORKFLOW = "portfolio-forward-validation.yml"
 WORKFLOW_PATH = f".github/workflows/{WORKFLOW}"
-COLLECTION_CRON = "37 23 * * 1-5"
+COLLECTION_CRON = "37 23 * * 1,2,3,4,5"
 GRACE = timedelta(minutes=90)
 NY = ZoneInfo("America/New_York")
 HEALTHY_STATES = {"WAITING_FOR_START_SESSION", "WAITING_FOR_OUTCOME", "EVALUATED"}

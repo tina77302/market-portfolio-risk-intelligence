@@ -9,7 +9,7 @@ on:
       - 'scripts/check_portfolio_forward_health.py'
   schedule:
     # Separate from collection: UTC 02:17, 160 minutes after its 23:37 slot.
-    - cron: '17 2 * * *'
+    - cron: '17 2 * * 0,1,2,3,4,5,6'
 
 permissions:
   contents: read

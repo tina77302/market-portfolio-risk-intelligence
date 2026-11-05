@@ -2,8 +2,8 @@ name: Portfolio schedule probe
 
 on:
   schedule:
-    # Temporary probe: 2026-11-05 10:47 KST / 01:47 UTC.
-    - cron: '47 1 5 11 *'
+    # Bounded trial slots on 2026-11-05, 11:02 through 11:27 KST.
+    - cron: '2,7,12,17,22,27 2 5 11 *'
 
 permissions: {}
 
@@ -31,17 +31,19 @@ jobs:
 
           if os.environ["OBSERVED_EVENT"] != "schedule":
               raise SystemExit("This probe requires a real schedule event.")
-          planned = datetime(2026, 11, 5, 1, 47, tzinfo=timezone.utc)
+          planned = datetime(2026, 11, 5, 2, 2, tzinfo=timezone.utc)
+          expires = datetime(2026, 11, 5, 2, 40, tzinfo=timezone.utc)
           observed = datetime.now(timezone.utc)
-          # Cron has no year field. Expired runs only report and remove this file.
-          valid = planned.date() == observed.date() and observed >= planned
+          # Cron has no year field. Expired runs report and disable this probe.
+          valid = planned <= observed <= expires
           receipt = {
               "status": "SCHEDULE_OBSERVED" if valid else "PROBE_EXPIRED",
               "event": os.environ["OBSERVED_EVENT"],
               "schedule": os.environ["OBSERVED_SCHEDULE"],
-              "planned_at": planned.isoformat(),
+              "trial_starts_at": planned.isoformat(),
+              "trial_expires_at": expires.isoformat(),
               "observed_at": observed.isoformat(),
-              "delay_seconds": (observed - planned).total_seconds(),
+              "seconds_since_first_trial_slot": (observed - planned).total_seconds(),
               "run_id": os.environ["GITHUB_RUN_ID"],
               "collection_or_study_modified": False,
           }
@@ -59,19 +61,17 @@ jobs:
           retention-days: 7
           if-no-files-found: error
 
-  remove-temporary-probe:
+  stop-temporary-probe:
     needs: record-scheduled-event
     runs-on: ubuntu-latest
     timeout-minutes: 3
     permissions:
-      contents: write
+      actions: write
     env:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
     steps:
-      - name: Remove only this temporary workflow after saving its receipt
+      - name: Disable only this probe after saving its scheduled receipt
         run: |
-          probe_sha=$(gh api "repos/$GH_REPO/contents/.github/workflows/portfolio-schedule-probe.yml?ref=$GITHUB_SHA" --jq '.sha')
-          gh api --method DELETE "repos/$GH_REPO/contents/.github/workflows/portfolio-schedule-probe.yml" \
-            --raw-field message="ops: 임시 예약 점검 기록 보관 후 자동 제거" \
-            --raw-field branch=main --raw-field sha="$probe_sha"
+          gh api --method PUT "repos/$GH_REPO/actions/workflows/portfolio-schedule-probe.yml/disable"
+          gh api "repos/$GH_REPO/actions/workflows/portfolio-schedule-probe.yml" --jq '{state, path}'
