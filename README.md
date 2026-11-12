@@ -4,6 +4,8 @@ A risk intelligence workflow that validates a market stress early-warning model 
 
 **Predict → Diagnose → Stress → Compare**
 
+**Presentation:** [시장확산도부터 연구방법론까지 · 10분 발표](https://claude.ai/artifact/HbLnM3o496cCfD8GD8BszH) (press `N` for speaker notes)
+
 ## Core Modules
 - **Early Warning V2 & Market Monitor**: reproduce the Korea V1 model, test downside/tail risk features under the same purged walk-forward OOS setup, and adopt V2 only if it improves out of sample
 - **Portfolio Hidden Risk Map**: asset concentration, asset-level sector/class weights without ETF look-through, correlation, volatility, risk contribution, and factor sensitivity for up to 10 U.S. stocks and ETFs
